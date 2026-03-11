@@ -19,8 +19,8 @@ export enum EstadoCita {
 
 @Entity('citas')
 export class Cita {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ name: 'cliente_nombre', length: 100 })
   clienteNombre: string;
@@ -38,13 +38,13 @@ export class Cita {
   clienteTelefono: string;
 
   @Column({ name: 'id_usuario_asignado' })
-  idUsuarioAsignado: number;
+  idUsuarioAsignado: string;
 
   @Column({ name: 'id_mesa' })
-  idMesa: number;
+  idMesa: string;
 
   @Column({ name: 'id_tramite' })
-  idTramite: number;
+  idTramite: string;
 
   @Column({ name: 'fecha_hora', type: 'datetime' })
   fechaHora: Date;

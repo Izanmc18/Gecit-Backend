@@ -13,11 +13,11 @@ import { AsignacionMesa } from '../../asignacion-mesas/entities/asignacion-mesa.
 
 @Entity('usuarios')
 export class Usuario {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ name: 'id_rol' })
-  idRol: number;
+  idRol: string;
 
   @Column({ length: 100 })
   nombre: string;

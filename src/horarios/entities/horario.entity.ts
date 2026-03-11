@@ -9,11 +9,11 @@ import { Oficina } from '../../oficinas/entities/oficina.entity';
 
 @Entity('horarios')
 export class Horario {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ name: 'id_oficina' })
-  idOficina: number;
+  idOficina: string;
 
   @Column({ name: 'fecha_inicio', type: 'date' })
   fechaInicio: string;

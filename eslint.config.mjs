@@ -32,10 +32,11 @@ export default tseslint.config(
       "prettier/prettier": ["error", { endOfLine: "auto" }],
     },
   },
-  // Las entidades TypeORM generan falsos positivos en no-unsafe-return
-  // debido a que los tipos internos de los decoradores de relación
+  // Se ve que las entidades TypeORM generan falsos positivos en no-unsafe-return
+  // debido a que los tipos internos de los decoradores para las relaciones
   // (@ManyToOne, @OneToMany) se resuelven como `any` en las funciones
-  // de inversión. Es un problema conocido del ecosistema TypeORM.
+  // de inversión. Es un problema que ocurre cuando trabajas con TypeORM
+  // y que con este ajuste me evito que salte el error en esas lineas en las entidades.
   {
     files: ['**/*.entity.ts'],
     rules: {

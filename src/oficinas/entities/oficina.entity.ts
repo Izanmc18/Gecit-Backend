@@ -5,8 +5,8 @@ import { Horario } from '../../horarios/entities/horario.entity';
 
 @Entity('oficinas')
 export class Oficina {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ length: 100 })
   nombre: string;

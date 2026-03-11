@@ -11,11 +11,11 @@ import { Mesa } from '../../mesas/entities/mesa.entity';
 
 @Entity('salas')
 export class Sala {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ name: 'id_oficina' })
-  idOficina: number;
+  idOficina: string;
 
   @Column({ name: 'nombre_sala', length: 100 })
   nombreSala: string;

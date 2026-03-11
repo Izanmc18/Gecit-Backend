@@ -18,14 +18,14 @@ export enum TurnoAsignacion {
 @Entity('asignacion_mesas')
 @Unique(['mesa', 'fecha', 'turno'])
 export class AsignacionMesa {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ name: 'id_usuario' })
-  idUsuario: number;
+  idUsuario: string;
 
   @Column({ name: 'id_mesa' })
-  idMesa: number;
+  idMesa: string;
 
   @Column({ type: 'date' })
   fecha: string;

@@ -9,11 +9,11 @@ import { Oficina } from '../../oficinas/entities/oficina.entity';
 
 @Entity('festivos')
 export class Festivo {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ name: 'id_oficina' })
-  idOficina: number;
+  idOficina: string;
 
   @Column({ type: 'date' })
   fecha: string;

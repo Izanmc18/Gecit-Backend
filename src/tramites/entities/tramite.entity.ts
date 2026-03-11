@@ -3,8 +3,8 @@ import { Cita } from '../../citas/entities/cita.entity';
 
 @Entity('tramites')
 export class Tramite {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ name: 'nombre_tramite', length: 150 })
   nombreTramite: string;

@@ -21,11 +21,11 @@ export enum EstadoAusencia {
 
 @Entity('ausencias')
 export class Ausencia {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ name: 'id_usuario' })
-  idUsuario: number;
+  idUsuario: string;
 
   @Column({ name: 'fecha_solicitud', type: 'date' })
   fechaSolicitud: string;
