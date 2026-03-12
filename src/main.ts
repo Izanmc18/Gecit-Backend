@@ -13,9 +13,9 @@ async function bootstrap() {
   // Pipe global de validación estricta de DTOs
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,           // Elimina propiedades no declaradas en el DTO
+      whitelist: true, // Elimina propiedades no declaradas en el DTO
       forbidNonWhitelisted: true, // Lanza error si hay propiedades extra
-      transform: true,           // Transforma el payload al tipo del DTO automáticamente
+      transform: true, // Transforma el payload al tipo del DTO automáticamente
     }),
   );
 
