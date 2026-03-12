@@ -20,9 +20,8 @@ export class RolesService {
       const rol = this.rolRepository.create(createRolDto);
       await this.rolRepository.save(rol);
       return rol;
-    } catch (error: any) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (error.code === 'ER_DUP_ENTRY') {
+    } catch (error) {
+      if ((error as { code?: string }).code === 'ER_DUP_ENTRY') {
         throw new BadRequestException('El rol ya existe');
       }
       throw error;
@@ -48,9 +47,8 @@ export class RolesService {
     try {
       await this.rolRepository.save(rol);
       return rol;
-    } catch (error: any) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      if (error.code === 'ER_DUP_ENTRY') {
+    } catch (error) {
+      if ((error as { code?: string }).code === 'ER_DUP_ENTRY') {
         throw new BadRequestException('El nombre de rol ya está en uso');
       }
       throw error;
