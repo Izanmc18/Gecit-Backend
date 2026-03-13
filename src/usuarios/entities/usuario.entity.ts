@@ -6,10 +6,10 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Rol } from '../../roles/entities/rol.entity';
-import { Ausencia } from '../../ausencias/entities/ausencia.entity';
-import { Cita } from '../../citas/entities/cita.entity';
-import { AsignacionMesa } from '../../asignacion-mesas/entities/asignacion-mesa.entity';
+import { Rol } from 'src/roles/entities/rol.entity';
+import { Ausencia } from 'src/ausencias/entities/ausencia.entity';
+import { Cita } from 'src/citas/entities/cita.entity';
+import { AsignacionMesa } from 'src/asignacion-mesas/entities/asignacion-mesa.entity';
 
 @Entity('usuarios')
 export class Usuario {
