@@ -8,6 +8,7 @@ import { SalasModule } from './salas/salas.module';
 import { FestivosModule } from './festivos/festivos.module';
 import { HorariosModule } from './horarios/horarios.module';
 import { MesasModule } from './mesas/mesas.module';
+import { AusenciasModule } from './ausencias/ausencias.module';
 
 @Module({
   imports: [
@@ -49,6 +50,8 @@ import { MesasModule } from './mesas/mesas.module';
     HorariosModule,
 
     MesasModule,
+
+    AusenciasModule,
   ],
 })
 export class AppModule {}
