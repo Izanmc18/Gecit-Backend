@@ -10,6 +10,7 @@ import { HorariosModule } from './horarios/horarios.module';
 import { MesasModule } from './mesas/mesas.module';
 import { AusenciasModule } from './ausencias/ausencias.module';
 import { CitasModule } from './citas/citas.module';
+import { AsignacionMesasModule } from './asignacion-mesas/asignacion-mesas.module';
 
 @Module({
   imports: [
@@ -55,6 +56,8 @@ import { CitasModule } from './citas/citas.module';
     AusenciasModule,
 
     CitasModule,
+
+    AsignacionMesasModule,
   ],
 })
 export class AppModule {}
