@@ -5,33 +5,31 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
 import { Repository } from 'typeorm';
 import { Usuario } from '../../usuarios/entities/usuario.entity';
-import { JwtPayload } from '../interfaces/jwt-payload.en.interface';
+import { JwtPayload } from '../interfaces/jwt-payload.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    configService: ConfigService,
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
+    configService: ConfigService,
   ) {
     super({
+      secretOrKey: configService.get<string>('JWT_SECRET')!,
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET') ?? '',
     });
   }
 
   async validate(payload: JwtPayload): Promise<Usuario> {
     const { sub } = payload;
-
-    const usuario = await this.usuarioRepository.findOne({
+    // Cargo la relación 'rol' para que el Guard pueda leer el nombre del rol
+    const user = await this.usuarioRepository.findOne({
       where: { id: sub },
+      relations: ['rol'],
     });
 
-    if (!usuario) {
-      throw new UnauthorizedException('Token inválido');
-    }
+    if (!user) throw new UnauthorizedException('Token no válido');
 
-    return usuario;
+    return user;
   }
 }

@@ -1,6 +1,6 @@
 import { Usuario } from '../../usuarios/entities/usuario.entity';
 import { LoginUserDto } from '../dto';
-import { JwtPayload } from '../interfaces/jwt-payload.en.interface';
+import { JwtPayload } from '../interfaces/jwt-payload.interface';
 
 export class AuthAdapter {
   static toPayload(usuario: Usuario): JwtPayload {
