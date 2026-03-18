@@ -11,6 +11,7 @@ import { MesasModule } from './mesas/mesas.module';
 import { AusenciasModule } from './ausencias/ausencias.module';
 import { CitasModule } from './citas/citas.module';
 import { AsignacionMesasModule } from './asignacion-mesas/asignacion-mesas.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -58,6 +59,8 @@ import { AsignacionMesasModule } from './asignacion-mesas/asignacion-mesas.modul
     CitasModule,
 
     AsignacionMesasModule,
+
+    AuthModule,
   ],
 })
 export class AppModule {}
