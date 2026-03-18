@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as bcrypt from 'bcrypt';
 import { CreateUsuarioDto, UpdateUsuarioDto } from './dto';
 import { Usuario } from './entities/usuario.entity';
 
@@ -18,7 +19,15 @@ export class UsuariosService {
 
   async create(createUsuarioDto: CreateUsuarioDto): Promise<Usuario> {
     try {
-      const usuario = this.usuarioRepository.create(createUsuarioDto);
+      const { passwordHash, ...restoDatos } = createUsuarioDto;
+
+      const hashedPassword = await bcrypt.hash(passwordHash, 10);
+
+      const usuario = this.usuarioRepository.create({
+        ...restoDatos,
+        passwordHash: hashedPassword,
+      });
+
       await this.usuarioRepository.save(usuario);
       return usuario;
     } catch (error: any) {
@@ -48,9 +57,19 @@ export class UsuariosService {
     id: string,
     updateUsuarioDto: UpdateUsuarioDto,
   ): Promise<Usuario> {
+    const datosActualizar = { ...updateUsuarioDto };
+
+    if (updateUsuarioDto.passwordHash) {
+      const hashedPassword = await bcrypt.hash(
+        updateUsuarioDto.passwordHash,
+        10,
+      );
+      datosActualizar.passwordHash = hashedPassword;
+    }
+
     const usuario = await this.usuarioRepository.preload({
       id,
-      ...updateUsuarioDto,
+      ...datosActualizar,
     });
 
     if (!usuario)
