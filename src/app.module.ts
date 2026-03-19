@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { APP_GUARD } from '@nestjs/core'; // Importante para el Guard Global
+
 import { OficinasModule } from './oficinas/oficinas.module';
 import { RolesModule } from './roles/roles.module';
 import { TramitesModule } from './tramites/tramites.module';
@@ -12,16 +14,15 @@ import { AusenciasModule } from './ausencias/ausencias.module';
 import { CitasModule } from './citas/citas.module';
 import { AsignacionMesasModule } from './asignacion-mesas/asignacion-mesas.module';
 import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
 @Module({
   imports: [
-    // Carga las variables del .env de forma global en toda la aplicación
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
     }),
 
-    // Configuración de TypeORM leyendo las variables de entorno
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -33,34 +34,28 @@ import { AuthModule } from './auth/auth.module';
         password: config.get<string>('DB_PASS'),
         database: config.get<string>('DB_NAME'),
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        // Solo en desarrollo: sincroniza el esquema automáticamente.
-        // En producción debe ser false (usaremos migraciones).
         synchronize: false,
         autoLoadEntities: true,
       }),
     }),
 
     OficinasModule,
-
     RolesModule,
-
     TramitesModule,
-
     SalasModule,
-
     FestivosModule,
-
     HorariosModule,
-
     MesasModule,
-
     AusenciasModule,
-
     CitasModule,
-
     AsignacionMesasModule,
-
     AuthModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
   ],
 })
 export class AppModule {}
