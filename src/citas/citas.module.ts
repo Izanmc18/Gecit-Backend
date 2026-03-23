@@ -3,9 +3,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CitasService } from './citas.service';
 import { CitasController } from './citas.controller';
 import { Cita } from './entities/cita.entity';
+import { Mesa } from '../mesas/entities/mesa.entity';
+import { Festivo } from '../festivos/entities/festivo.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Cita])],
+  imports: [TypeOrmModule.forFeature([Cita, Mesa, Festivo])],
   controllers: [CitasController],
   providers: [CitasService],
   exports: [TypeOrmModule, CitasService],
