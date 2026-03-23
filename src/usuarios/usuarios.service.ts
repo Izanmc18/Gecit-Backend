@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   BadRequestException,
@@ -9,6 +10,7 @@ import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { CreateUsuarioDto, UpdateUsuarioDto } from './dto';
 import { Usuario } from './entities/usuario.entity';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class UsuariosService {
@@ -38,8 +40,32 @@ export class UsuariosService {
     }
   }
 
-  async findAll(): Promise<Usuario[]> {
-    return this.usuarioRepository.find({ relations: ['rol'] });
+  async findAll(paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0, search } = paginationDto;
+
+    const queryBuilder = this.usuarioRepository
+      .createQueryBuilder('usuario')
+      .leftJoinAndSelect('usuario.rol', 'rol')
+      .take(limit)
+      .skip(offset);
+
+    if (search) {
+      queryBuilder.where(
+        '(LOWER(usuario.nombre) LIKE LOWER(:search) OR LOWER(usuario.apellidos) LIKE LOWER(:search) OR LOWER(usuario.email) LIKE LOWER(:search))',
+        { search: `%${search}%` },
+      );
+    }
+
+    const [usuarios, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      data: usuarios,
+      meta: {
+        total,
+        limit,
+        offset,
+      },
+    };
   }
 
   async findOne(id: string): Promise<Usuario> {

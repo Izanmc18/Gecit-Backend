@@ -7,12 +7,14 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common';
 import { UsuariosService } from './usuarios.service';
 import { CreateUsuarioDto, UpdateUsuarioDto } from './dto';
 import { UsuarioAdapter } from './adapters/usuario.adapter';
 import { Auth } from '../auth/decorators';
 import { ValidRoles } from '../auth/interfaces';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Controller('usuarios')
 export class UsuariosController {
@@ -27,9 +29,13 @@ export class UsuariosController {
 
   @Get()
   @Auth(ValidRoles.admin)
-  async findAll() {
-    const usuarios = await this.usuariosService.findAll();
-    return UsuarioAdapter.toResponseList(usuarios);
+  async findAll(@Query() paginationDto: PaginationDto) {
+    const { data, meta } = await this.usuariosService.findAll(paginationDto);
+
+    return {
+      data: UsuarioAdapter.toResponseList(data),
+      meta,
+    };
   }
 
   @Get(':id')
