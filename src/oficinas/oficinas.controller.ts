@@ -12,6 +12,7 @@ import { OficinasService } from './oficinas.service';
 import { CreateOficinaDto, UpdateOficinaDto } from './dto';
 import { Auth } from '../auth/decorators';
 import { ValidRoles } from '../auth/interfaces';
+import { OficinaAdapter } from './adapters';
 
 @Controller('oficinas')
 export class OficinasController {
@@ -19,29 +20,33 @@ export class OficinasController {
 
   @Post()
   @Auth(ValidRoles.admin)
-  create(@Body() createOficinaDto: CreateOficinaDto) {
-    return this.oficinasService.create(createOficinaDto);
+  async create(@Body() createOficinaDto: CreateOficinaDto) {
+    const oficina = await this.oficinasService.create(createOficinaDto);
+    return OficinaAdapter.toResponse(oficina);
   }
 
   @Get()
   @Auth(ValidRoles.admin, ValidRoles.empleado)
-  findAll() {
-    return this.oficinasService.findAll();
+  async findAll() {
+    const oficinas = await this.oficinasService.findAll();
+    return OficinaAdapter.toResponseList(oficinas);
   }
 
   @Get(':id')
   @Auth(ValidRoles.admin, ValidRoles.empleado)
-  findOne(@Param('id', ParseUUIDPipe) id: string) {
-    return this.oficinasService.findOne(id);
+  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+    const oficina = await this.oficinasService.findOne(id);
+    return OficinaAdapter.toResponse(oficina);
   }
 
   @Patch(':id')
   @Auth(ValidRoles.admin)
-  update(
+  async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateOficinaDto: UpdateOficinaDto,
   ) {
-    return this.oficinasService.update(id, updateOficinaDto);
+    const oficina = await this.oficinasService.update(id, updateOficinaDto);
+    return OficinaAdapter.toResponse(oficina);
   }
 
   @Delete(':id')

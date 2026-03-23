@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   BadRequestException,
@@ -114,6 +113,16 @@ export class UsuariosService {
 
   async remove(id: string): Promise<void> {
     const usuario = await this.findOne(id);
-    await this.usuarioRepository.remove(usuario);
+
+    try {
+      await this.usuarioRepository.remove(usuario);
+    } catch (error: any) {
+      if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+        throw new BadRequestException(
+          'No se puede eliminar a este usuario porque tiene citas, asignaciones o ausencias en su historial.',
+        );
+      }
+      throw error;
+    }
   }
 }

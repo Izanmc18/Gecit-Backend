@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateSalaDto, UpdateSalaDto } from './dto';
@@ -43,6 +48,16 @@ export class SalasService {
 
   async remove(id: string): Promise<void> {
     const sala = await this.findOne(id);
-    await this.salaRepository.remove(sala);
+
+    try {
+      await this.salaRepository.remove(sala);
+    } catch (error: any) {
+      if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+        throw new BadRequestException(
+          'No se puede eliminar esta sala porque tiene mesas vinculadas a ella. Elimina o mueve las mesas primero.',
+        );
+      }
+      throw error;
+    }
   }
 }

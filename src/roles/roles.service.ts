@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   Injectable,
   NotFoundException,
@@ -55,11 +56,18 @@ export class RolesService {
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<void> {
     const rol = await this.findOne(id);
-    await this.rolRepository.remove(rol);
-    return {
-      message: `Rol con id ${id} eliminado exitosamente`,
-    };
+
+    try {
+      await this.rolRepository.remove(rol);
+    } catch (error: any) {
+      if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+        throw new BadRequestException(
+          'No se puede eliminar este rol porque hay usuarios activos que lo tienen asignado.',
+        );
+      }
+      throw error;
+    }
   }
 }

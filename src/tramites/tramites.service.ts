@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   Injectable,
   NotFoundException,
@@ -55,11 +56,18 @@ export class TramitesService {
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string): Promise<void> {
     const tramite = await this.findOne(id);
-    await this.tramiteRepository.remove(tramite);
-    return {
-      message: `Trámite con id ${id} eliminado exitosamente`,
-    };
+
+    try {
+      await this.tramiteRepository.remove(tramite);
+    } catch (error: any) {
+      if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+        throw new BadRequestException(
+          'No se puede eliminar este trámite porque ya tiene citas vinculadas en el historial. Te recomendamos cambiarle el nombre a "Obsoleto" o similar.',
+        );
+      }
+      throw error;
+    }
   }
 }

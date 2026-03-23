@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateMesaDto, UpdateMesaDto } from './dto';
@@ -43,6 +48,16 @@ export class MesasService {
 
   async remove(id: string): Promise<void> {
     const mesa = await this.findOne(id);
-    await this.mesaRepository.remove(mesa);
+
+    try {
+      await this.mesaRepository.remove(mesa);
+    } catch (error: any) {
+      if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+        throw new BadRequestException(
+          'No se puede eliminar esta mesa porque tiene citas o asignaciones de trabajadores vinculadas. Debes reasignar o eliminar esos registros primero.',
+        );
+      }
+      throw error;
+    }
   }
 }

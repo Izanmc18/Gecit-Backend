@@ -1,9 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateOficinaDto, UpdateOficinaDto } from './dto';
 import { Oficina } from './entities';
-import { OficinaAdapter, OficinaResponse } from './adapters';
 
 @Injectable()
 export class OficinasService {
@@ -12,28 +16,26 @@ export class OficinasService {
     private readonly oficinaRepository: Repository<Oficina>,
   ) {}
 
-  async create(createOficinaDto: CreateOficinaDto): Promise<OficinaResponse> {
+  async create(createOficinaDto: CreateOficinaDto): Promise<Oficina> {
     const oficina = this.oficinaRepository.create(createOficinaDto);
-    await this.oficinaRepository.save(oficina);
-    return OficinaAdapter.toResponse(oficina);
+    return await this.oficinaRepository.save(oficina);
   }
 
-  async findAll(): Promise<OficinaResponse[]> {
-    const oficinas = await this.oficinaRepository.find();
-    return OficinaAdapter.toResponseList(oficinas);
+  async findAll(): Promise<Oficina[]> {
+    return await this.oficinaRepository.find();
   }
 
-  async findOne(id: string): Promise<OficinaResponse> {
+  async findOne(id: string): Promise<Oficina> {
     const oficina = await this.oficinaRepository.findOneBy({ id });
     if (!oficina)
       throw new NotFoundException(`Oficina con id ${id} no encontrada`);
-    return OficinaAdapter.toResponse(oficina);
+    return oficina;
   }
 
   async update(
     id: string,
     updateOficinaDto: UpdateOficinaDto,
-  ): Promise<OficinaResponse> {
+  ): Promise<Oficina> {
     const oficina = await this.oficinaRepository.preload({
       id,
       ...updateOficinaDto,
@@ -42,14 +44,21 @@ export class OficinasService {
     if (!oficina)
       throw new NotFoundException(`Oficina con id ${id} no encontrada`);
 
-    await this.oficinaRepository.save(oficina);
-    return OficinaAdapter.toResponse(oficina);
+    return await this.oficinaRepository.save(oficina);
   }
 
   async remove(id: string): Promise<void> {
-    const oficina = await this.oficinaRepository.findOneBy({ id });
-    if (!oficina)
-      throw new NotFoundException(`Oficina con id ${id} no encontrada`);
-    await this.oficinaRepository.remove(oficina);
+    const oficina = await this.findOne(id);
+
+    try {
+      await this.oficinaRepository.remove(oficina);
+    } catch (error: any) {
+      if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+        throw new BadRequestException(
+          'No se puede eliminar esta oficina porque tiene salas o festivos vinculados. Elimina primero esos registros dependientes.',
+        );
+      }
+      throw error;
+    }
   }
 }
