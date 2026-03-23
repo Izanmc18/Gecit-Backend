@@ -8,17 +8,43 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateAsignacionMesaDto, UpdateAsignacionMesaDto } from './dto';
 import { AsignacionMesa } from './entities/asignacion-mesa.entity';
+import {
+  Ausencia,
+  EstadoAusencia,
+} from '../ausencias/entities/ausencia.entity';
 
 @Injectable()
 export class AsignacionMesasService {
   constructor(
     @InjectRepository(AsignacionMesa)
     private readonly asignacionMesaRepository: Repository<AsignacionMesa>,
+
+    @InjectRepository(Ausencia)
+    private readonly ausenciaRepository: Repository<Ausencia>,
   ) {}
 
   async create(
     createAsignacionMesaDto: CreateAsignacionMesaDto,
   ): Promise<AsignacionMesa> {
+    const { idUsuario, fecha } = createAsignacionMesaDto;
+
+    const ausencia = await this.ausenciaRepository
+      .createQueryBuilder('ausencia')
+      .where('ausencia.idUsuario = :idUsuario', { idUsuario })
+      .andWhere('ausencia.estado = :estado', {
+        estado: EstadoAusencia.APROBADA,
+      })
+      .andWhere(':fecha BETWEEN ausencia.fechaInicio AND ausencia.fechaFin', {
+        fecha,
+      })
+      .getOne();
+
+    if (ausencia) {
+      throw new BadRequestException(
+        `No se puede asignar a este usuario: Tiene una ausencia aprobada (${ausencia.tipo}) desde el ${ausencia.fechaInicio} hasta el ${ausencia.fechaFin}.`,
+      );
+    }
+
     try {
       const asignacion = this.asignacionMesaRepository.create(
         createAsignacionMesaDto,
