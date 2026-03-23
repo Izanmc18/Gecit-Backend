@@ -7,12 +7,14 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common';
 import { AusenciasService } from './ausencias.service';
 import { CreateAusenciaDto, UpdateAusenciaDto } from './dto';
 import { AusenciaAdapter } from './adapters/ausencia.adapter';
 import { Auth } from '../auth/decorators';
 import { ValidRoles } from '../auth/interfaces';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Controller('ausencias')
 export class AusenciasController {
@@ -27,9 +29,12 @@ export class AusenciasController {
 
   @Get()
   @Auth(ValidRoles.admin, ValidRoles.empleado)
-  async findAll() {
-    const ausencias = await this.ausenciasService.findAll();
-    return AusenciaAdapter.toResponseList(ausencias);
+  async findAll(@Query() paginationDto: PaginationDto) {
+    const { data, meta } = await this.ausenciasService.findAll(paginationDto);
+    return {
+      data: AusenciaAdapter.toResponseList(data),
+      meta,
+    };
   }
 
   @Get(':id')

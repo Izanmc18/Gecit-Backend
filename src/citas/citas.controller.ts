@@ -7,12 +7,14 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common';
 import { CitasService } from './citas.service';
 import { CreateCitaDto, UpdateCitaDto } from './dto';
 import { CitaAdapter } from './adapters/cita.adapter';
 import { Auth } from '../auth/decorators';
 import { ValidRoles } from '../auth/interfaces';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Controller('citas')
 export class CitasController {
@@ -27,9 +29,12 @@ export class CitasController {
 
   @Get()
   @Auth(ValidRoles.admin, ValidRoles.empleado)
-  async findAll() {
-    const citas = await this.citasService.findAll();
-    return CitaAdapter.toResponseList(citas);
+  async findAll(@Query() paginationDto: PaginationDto) {
+    const { data, meta } = await this.citasService.findAll(paginationDto);
+    return {
+      data: CitaAdapter.toResponseList(data),
+      meta,
+    };
   }
 
   @Get(':id')

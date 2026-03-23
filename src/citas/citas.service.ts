@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateCitaDto, UpdateCitaDto } from './dto';
 import { Cita } from './entities/cita.entity';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class CitasService {
@@ -16,10 +17,35 @@ export class CitasService {
     return await this.citaRepository.save(cita);
   }
 
-  async findAll(): Promise<Cita[]> {
-    return await this.citaRepository.find({
-      relations: ['usuarioAsignado', 'mesa', 'tramite'],
-    });
+  async findAll(paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0, search } = paginationDto;
+
+    const queryBuilder = this.citaRepository
+      .createQueryBuilder('cita')
+      .leftJoinAndSelect('cita.usuarioAsignado', 'usuarioAsignado')
+      .leftJoinAndSelect('cita.mesa', 'mesa')
+      .leftJoinAndSelect('cita.tramite', 'tramite')
+      .take(limit)
+      .skip(offset)
+      .orderBy('cita.fechaHora', 'DESC');
+
+    if (search) {
+      queryBuilder.where(
+        '(LOWER(cita.clienteNombre) LIKE LOWER(:search) OR LOWER(cita.clienteApellidos) LIKE LOWER(:search) OR LOWER(cita.clienteDni) LIKE LOWER(:search))',
+        { search: `%${search}%` },
+      );
+    }
+
+    const [citas, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      data: citas,
+      meta: {
+        total,
+        limit,
+        offset,
+      },
+    };
   }
 
   async findOne(id: string): Promise<Cita> {

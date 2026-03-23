@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateAusenciaDto, UpdateAusenciaDto } from './dto';
 import { Ausencia } from './entities/ausencia.entity';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class AusenciasService {
@@ -16,8 +17,26 @@ export class AusenciasService {
     return await this.ausenciaRepository.save(ausencia);
   }
 
-  async findAll(): Promise<Ausencia[]> {
-    return await this.ausenciaRepository.find({ relations: ['usuario'] });
+  async findAll(paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0 } = paginationDto;
+
+    const queryBuilder = this.ausenciaRepository
+      .createQueryBuilder('ausencia')
+      .leftJoinAndSelect('ausencia.usuario', 'usuario')
+      .take(limit)
+      .skip(offset)
+      .orderBy('ausencia.fechaSolicitud', 'DESC');
+
+    const [ausencias, total] = await queryBuilder.getManyAndCount();
+
+    return {
+      data: ausencias,
+      meta: {
+        total,
+        limit,
+        offset,
+      },
+    };
   }
 
   async findOne(id: string): Promise<Ausencia> {
