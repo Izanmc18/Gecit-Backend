@@ -8,33 +8,52 @@ import {
   Delete,
   ParseUUIDPipe,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { FestivosService } from './festivos.service';
 import { CreateFestivoDto, UpdateFestivoDto } from './dto';
 import { FestivoAdapter } from './adapters/festivo.adapter';
+import { Auth } from '../auth/decorators';
+import { ValidRoles } from '../auth/interfaces';
 
+@ApiTags('Holidays')
+@ApiBearerAuth()
 @Controller('holidays')
 export class FestivosController {
   constructor(private readonly festivosService: FestivosService) {}
 
   @Post()
+  @Auth(ValidRoles.admin)
+  @ApiOperation({ summary: 'Create a new holiday (Admin only)' })
+  @ApiResponse({ status: 201, description: 'Holiday created successfully.' })
   async create(@Body() createFestivoDto: CreateFestivoDto) {
     const festivo = await this.festivosService.create(createFestivoDto);
     return FestivoAdapter.toResponse(festivo);
   }
 
   @Get()
+  @Auth(ValidRoles.admin, ValidRoles.empleado)
+  @ApiOperation({ summary: 'Get a list of all holidays' })
   async findAll() {
     const festivos = await this.festivosService.findAll();
     return FestivoAdapter.toResponseList(festivos);
   }
 
   @Get(':id')
+  @Auth(ValidRoles.admin, ValidRoles.empleado)
+  @ApiOperation({ summary: 'Get one holiday by ID' })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const festivo = await this.festivosService.findOne(id);
     return FestivoAdapter.toResponse(festivo);
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin)
+  @ApiOperation({ summary: 'Update a holiday by ID (Admin only)' })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateFestivoDto: UpdateFestivoDto,
@@ -44,6 +63,8 @@ export class FestivosController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin)
+  @ApiOperation({ summary: 'Delete a holiday by ID (Admin only)' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.festivosService.remove(id);
   }
