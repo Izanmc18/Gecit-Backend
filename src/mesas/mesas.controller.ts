@@ -12,7 +12,7 @@ import { MesasService } from './mesas.service';
 import { CreateMesaDto, UpdateMesaDto } from './dto';
 import { MesaAdapter } from './adapters/mesa.adapter';
 
-@Controller('mesas')
+@Controller('tables')
 export class MesasController {
   constructor(private readonly mesasService: MesasService) {}
 

@@ -12,7 +12,7 @@ import { TramitesService } from './tramites.service';
 import { CreateTramiteDto, UpdateTramiteDto } from './dto';
 import { TramiteAdapter } from './adapters/tramite.adapter';
 
-@Controller('tramites')
+@Controller('procedures')
 export class TramitesController {
   constructor(private readonly tramitesService: TramitesService) {}
 

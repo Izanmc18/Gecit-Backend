@@ -24,7 +24,7 @@ import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @ApiTags('Users')
 @ApiBearerAuth()
-@Controller('usuarios')
+@Controller('users')
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 

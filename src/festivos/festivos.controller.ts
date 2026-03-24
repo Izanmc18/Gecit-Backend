@@ -12,7 +12,7 @@ import { FestivosService } from './festivos.service';
 import { CreateFestivoDto, UpdateFestivoDto } from './dto';
 import { FestivoAdapter } from './adapters/festivo.adapter';
 
-@Controller('festivos')
+@Controller('holidays')
 export class FestivosController {
   constructor(private readonly festivosService: FestivosService) {}
 

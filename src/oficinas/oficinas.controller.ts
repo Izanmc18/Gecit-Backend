@@ -22,7 +22,7 @@ import { OficinaAdapter } from './adapters';
 
 @ApiTags('Offices')
 @ApiBearerAuth()
-@Controller('oficinas')
+@Controller('offices')
 export class OficinasController {
   constructor(private readonly oficinasService: OficinasService) {}
 

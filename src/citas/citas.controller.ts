@@ -16,7 +16,7 @@ import { Auth } from '../auth/decorators';
 import { ValidRoles } from '../auth/interfaces';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 
-@Controller('citas')
+@Controller('appointments')
 export class CitasController {
   constructor(private readonly citasService: CitasService) {}
 
