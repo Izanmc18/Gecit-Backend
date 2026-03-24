@@ -13,6 +13,7 @@ import { MesasModule } from './mesas/mesas.module';
 import { AusenciasModule } from './ausencias/ausencias.module';
 import { CitasModule } from './citas/citas.module';
 import { AsignacionMesasModule } from './asignacion-mesas/asignacion-mesas.module';
+import { UsuariosModule } from './usuarios/usuarios.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 
@@ -49,6 +50,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     AusenciasModule,
     CitasModule,
     AsignacionMesasModule,
+    UsuariosModule,
     AuthModule,
   ],
   providers: [
