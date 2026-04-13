@@ -10,20 +10,29 @@ import { Sala } from '../../salas/entities/sala.entity';
 import { Cita } from '../../citas/entities/cita.entity';
 import { AsignacionMesa } from '../../asignacion-mesas/entities/asignacion-mesa.entity';
 
-@Entity('mesas')
+@Entity({ name: 'mesas' })
 export class Mesa {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'id_sala' })
-  idSala: string;
-
-  @Column({ name: 'nombre_mesa', length: 50 })
+  @Column('varchar', { name: 'nombre_mesa', length: 50 })
   nombreMesa: string;
+
+  @Column('float', { name: 'pos_x', default: 0 })
+  posX: number;
+
+  @Column('float', { name: 'pos_y', default: 0 })
+  posY: number;
+
+  @Column('float', { default: 0 })
+  rotacion: number;
 
   @ManyToOne(() => Sala, (sala) => sala.mesas, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_sala' })
   sala: Sala;
+
+  @Column({ name: 'id_sala' })
+  idSala: string;
 
   @OneToMany(() => Cita, (cita) => cita.mesa)
   citas: Cita[];

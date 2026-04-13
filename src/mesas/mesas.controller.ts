@@ -37,7 +37,7 @@ export class MesasController {
 
   @Get()
   @Auth(ValidRoles.admin, ValidRoles.empleado)
-  @ApiOperation({ summary: 'Get a list of all tables' })
+  @ApiOperation({ summary: 'Get all tables' })
   async findAll() {
     const mesas = await this.mesasService.findAll();
     return MesaAdapter.toResponseList(mesas);
@@ -45,7 +45,7 @@ export class MesasController {
 
   @Get(':id')
   @Auth(ValidRoles.admin, ValidRoles.empleado)
-  @ApiOperation({ summary: 'Get one table by ID' })
+  @ApiOperation({ summary: 'Get a table by ID' })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const mesa = await this.mesasService.findOne(id);
     return MesaAdapter.toResponse(mesa);
@@ -53,7 +53,7 @@ export class MesasController {
 
   @Patch(':id')
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Update a table by ID (Admin only)' })
+  @ApiOperation({ summary: 'Update a table' })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateMesaDto: UpdateMesaDto,
@@ -64,7 +64,7 @@ export class MesasController {
 
   @Delete(':id')
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Delete a table by ID (Admin only)' })
+  @ApiOperation({ summary: 'Delete a table' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.mesasService.remove(id);
   }

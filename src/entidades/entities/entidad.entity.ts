@@ -6,7 +6,10 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Usuario } from '../../usuarios/entities/usuario.entity';
-//import { Sala } from '../../salas/entities/sala.entity';
+import { Sala } from '../../salas/entities/sala.entity';
+import { Tramite } from '../../tramites/entities/tramite.entity';
+import { Festivo } from '../../festivos/entities/festivo.entity';
+import { Horario } from '../../horarios/entities/horario.entity';
 import { Cita } from '../../citas/entities/cita.entity';
 
 @Entity({ name: 'entidades' })
@@ -32,11 +35,22 @@ export class Entidad {
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;
 
+  // RELACIONES INVERSAS (Solucionan los errores del IDE)
+
   @OneToMany(() => Usuario, (usuario) => usuario.entidad)
   usuarios: Usuario[];
 
-  /*@OneToMany(() => Sala, (sala) => sala.entidad)
-  salas: Sala[];*/
+  @OneToMany(() => Sala, (sala) => sala.entidad)
+  salas: Sala[];
+
+  @OneToMany(() => Tramite, (tramite) => tramite.entidad)
+  tramites: Tramite[];
+
+  @OneToMany(() => Festivo, (festivo) => festivo.entidad)
+  festivos: Festivo[];
+
+  @OneToMany(() => Horario, (horario) => horario.entidad)
+  horarios: Horario[];
 
   @OneToMany(() => Cita, (cita) => cita.entidad)
   citas: Cita[];

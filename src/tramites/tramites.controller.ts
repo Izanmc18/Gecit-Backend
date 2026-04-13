@@ -37,7 +37,7 @@ export class TramitesController {
 
   @Get()
   @Auth(ValidRoles.admin, ValidRoles.empleado)
-  @ApiOperation({ summary: 'Get a list of all procedures' })
+  @ApiOperation({ summary: 'Get all procedures' })
   async findAll() {
     const tramites = await this.tramitesService.findAll();
     return TramiteAdapter.toResponseList(tramites);
@@ -45,7 +45,7 @@ export class TramitesController {
 
   @Get(':id')
   @Auth(ValidRoles.admin, ValidRoles.empleado)
-  @ApiOperation({ summary: 'Get one procedure by ID' })
+  @ApiOperation({ summary: 'Get a procedure by ID' })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const tramite = await this.tramitesService.findOne(id);
     return TramiteAdapter.toResponse(tramite);
@@ -53,7 +53,7 @@ export class TramitesController {
 
   @Patch(':id')
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Update a procedure by ID (Admin only)' })
+  @ApiOperation({ summary: 'Update a procedure' })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateTramiteDto: UpdateTramiteDto,
@@ -64,7 +64,7 @@ export class TramitesController {
 
   @Delete(':id')
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Delete a procedure by ID (Admin only)' })
+  @ApiOperation({ summary: 'Delete a procedure' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.tramitesService.remove(id);
   }

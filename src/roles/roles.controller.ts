@@ -30,6 +30,7 @@ export class RolesController {
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Create a new role (Admin only)' })
   @ApiResponse({ status: 201, description: 'Role created successfully.' })
+  @ApiResponse({ status: 403, description: 'Forbidden.' })
   async create(@Body() createRolDto: CreateRolDto) {
     const rol = await this.rolesService.create(createRolDto);
     return RolAdapter.toResponse(rol);
@@ -37,7 +38,7 @@ export class RolesController {
 
   @Get()
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Get a list of all roles (Admin only)' })
+  @ApiOperation({ summary: 'Get all roles (Admin only)' })
   async findAll() {
     const roles = await this.rolesService.findAll();
     return RolAdapter.toResponseList(roles);
@@ -45,7 +46,7 @@ export class RolesController {
 
   @Get(':id')
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Get one role by ID' })
+  @ApiOperation({ summary: 'Get a role by ID' })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const rol = await this.rolesService.findOne(id);
     return RolAdapter.toResponse(rol);
@@ -53,7 +54,7 @@ export class RolesController {
 
   @Patch(':id')
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Update a role by ID' })
+  @ApiOperation({ summary: 'Update a role' })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateRolDto: UpdateRolDto,
@@ -64,7 +65,7 @@ export class RolesController {
 
   @Delete(':id')
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Delete a role by ID' })
+  @ApiOperation({ summary: 'Delete a role' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.rolesService.remove(id);
   }
