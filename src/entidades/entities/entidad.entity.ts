@@ -3,7 +3,11 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   CreateDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { Usuario } from '../../usuarios/entities/usuario.entity';
+//import { Sala } from '../../salas/entities/sala.entity';
+import { Cita } from '../../citas/entities/cita.entity';
 
 @Entity({ name: 'entidades' })
 export class Entidad {
@@ -28,6 +32,12 @@ export class Entidad {
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;
 
-  // Nota: Las relaciones OneToMany (usuarios, salas, citas...) las iré
-  // añadiendo aquí conforme vaya refactorizando esos módulos para no romper nada ahora.
+  @OneToMany(() => Usuario, (usuario) => usuario.entidad)
+  usuarios: Usuario[];
+
+  /*@OneToMany(() => Sala, (sala) => sala.entidad)
+  salas: Sala[];*/
+
+  @OneToMany(() => Cita, (cita) => cita.entidad)
+  citas: Cita[];
 }
