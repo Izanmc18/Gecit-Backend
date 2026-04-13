@@ -1,27 +1,19 @@
 import { Usuario } from '../entities/usuario.entity';
 
-export class UsuarioResponse {
-  id: string;
-  idRol: string;
-  nombre: string;
-  apellidos: string;
-  email: string;
-  fotoUrl: string | null;
-}
-
 export class UsuarioAdapter {
-  static toResponse(usuario: Usuario): UsuarioResponse {
+  static toResponse(usuario: Usuario) {
     return {
       id: usuario.id,
-      idRol: usuario.idRol,
       nombre: usuario.nombre,
       apellidos: usuario.apellidos,
       email: usuario.email,
-      fotoUrl: usuario.fotoUrl || null,
+      dni: usuario.dni,
+      telefono: usuario.telefono,
+      fotoUrl: usuario.fotoUrl,
+      activo: usuario.activo,
+      rol: usuario.rol ? usuario.rol.nombreRol : null,
+      idEntidad: usuario.idEntidad,
+      entidad: usuario.entidad ? usuario.entidad.nombre : null,
     };
-  }
-
-  static toResponseList(usuarios: Usuario[]): UsuarioResponse[] {
-    return usuarios.map((usuario) => this.toResponse(usuario));
   }
 }

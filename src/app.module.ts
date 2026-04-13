@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_GUARD } from '@nestjs/core'; // Importante para el Guard Global
 
-import { OficinasModule } from './oficinas/oficinas.module';
+import { EntidadesModule } from './entidades/entidades.module';
 import { RolesModule } from './roles/roles.module';
 import { TramitesModule } from './tramites/tramites.module';
 import { SalasModule } from './salas/salas.module';
@@ -40,7 +40,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
       }),
     }),
 
-    OficinasModule,
+    EntidadesModule,
     RolesModule,
     TramitesModule,
     SalasModule,

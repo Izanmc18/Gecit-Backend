@@ -1,15 +1,15 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
-  BadRequestException,
   Injectable,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { CreateUsuarioDto, UpdateUsuarioDto } from './dto';
 import { Usuario } from './entities/usuario.entity';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 
 @Injectable()
 export class UsuariosService {
@@ -19,62 +19,36 @@ export class UsuariosService {
   ) {}
 
   async create(createUsuarioDto: CreateUsuarioDto): Promise<Usuario> {
+    const { password, ...userData } = createUsuarioDto;
+
     try {
-      const { passwordHash, ...restoDatos } = createUsuarioDto;
-
-      const hashedPassword = await bcrypt.hash(passwordHash, 10);
-
       const usuario = this.usuarioRepository.create({
-        ...restoDatos,
-        passwordHash: hashedPassword,
+        ...userData,
+        passwordHash: bcrypt.hashSync(password, 10),
       });
-
-      await this.usuarioRepository.save(usuario);
-      return usuario;
-    } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY') {
-        throw new BadRequestException('El email del usuario ya está en uso');
-      }
-      throw error;
+      return await this.usuarioRepository.save(usuario);
+    } catch (error) {
+      throw new BadRequestException(
+        'Check logs - duplicate email or invalid data',
+      );
     }
   }
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0, search } = paginationDto;
-
-    const queryBuilder = this.usuarioRepository
-      .createQueryBuilder('usuario')
-      .leftJoinAndSelect('usuario.rol', 'rol')
-      .take(limit)
-      .skip(offset);
-
-    if (search) {
-      queryBuilder.where(
-        '(LOWER(usuario.nombre) LIKE LOWER(:search) OR LOWER(usuario.apellidos) LIKE LOWER(:search) OR LOWER(usuario.email) LIKE LOWER(:search))',
-        { search: `%${search}%` },
-      );
-    }
-
-    const [usuarios, total] = await queryBuilder.getManyAndCount();
-
-    return {
-      data: usuarios,
-      meta: {
-        total,
-        limit,
-        offset,
-      },
-    };
+  async findAll(paginationDto: PaginationDto): Promise<Usuario[]> {
+    const { limit = 10, offset = 0 } = paginationDto;
+    return await this.usuarioRepository.find({
+      take: limit,
+      skip: offset,
+      relations: ['rol', 'entidad'],
+    });
   }
 
   async findOne(id: string): Promise<Usuario> {
     const usuario = await this.usuarioRepository.findOne({
       where: { id },
-      relations: ['rol'],
+      relations: ['rol', 'entidad'],
     });
-
-    if (!usuario)
-      throw new NotFoundException(`Usuario con id ${id} no encontrado`);
+    if (!usuario) throw new NotFoundException('User not found');
     return usuario;
   }
 
@@ -82,47 +56,24 @@ export class UsuariosService {
     id: string,
     updateUsuarioDto: UpdateUsuarioDto,
   ): Promise<Usuario> {
-    const datosActualizar = { ...updateUsuarioDto };
-
-    if (updateUsuarioDto.passwordHash) {
-      const hashedPassword = await bcrypt.hash(
-        updateUsuarioDto.passwordHash,
-        10,
-      );
-      datosActualizar.passwordHash = hashedPassword;
-    }
+    const { password, ...updateData } = updateUsuarioDto;
 
     const usuario = await this.usuarioRepository.preload({
       id,
-      ...datosActualizar,
+      ...updateData,
     });
 
-    if (!usuario)
-      throw new NotFoundException(`Usuario con id ${id} no encontrado`);
+    if (!usuario) throw new NotFoundException('User not found');
 
-    try {
-      await this.usuarioRepository.save(usuario);
-      return usuario;
-    } catch (error: any) {
-      if (error.code === 'ER_DUP_ENTRY') {
-        throw new BadRequestException('El email del usuario ya está en uso');
-      }
-      throw error;
+    if (password) {
+      usuario.passwordHash = bcrypt.hashSync(password, 10);
     }
+
+    return await this.usuarioRepository.save(usuario);
   }
 
   async remove(id: string): Promise<void> {
     const usuario = await this.findOne(id);
-
-    try {
-      await this.usuarioRepository.remove(usuario);
-    } catch (error: any) {
-      if (error.code === 'ER_ROW_IS_REFERENCED_2') {
-        throw new BadRequestException(
-          'No se puede eliminar a este usuario porque tiene citas, asignaciones o ausencias en su historial.',
-        );
-      }
-      throw error;
-    }
+    await this.usuarioRepository.remove(usuario);
   }
 }

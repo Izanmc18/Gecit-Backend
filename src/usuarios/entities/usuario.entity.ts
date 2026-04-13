@@ -1,49 +1,68 @@
 import {
   Column,
   Entity,
-  JoinColumn,
-  ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+  OneToMany,
 } from 'typeorm';
-import { Rol } from 'src/roles/entities/rol.entity';
-import { Ausencia } from 'src/ausencias/entities/ausencia.entity';
-import { Cita } from 'src/citas/entities/cita.entity';
-import { AsignacionMesa } from 'src/asignacion-mesas/entities/asignacion-mesa.entity';
+import { Rol } from '../../roles/entities/rol.entity';
+import { Entidad } from '../../entidades/entities/entidad.entity';
+import { Ausencia } from '../../ausencias/entities/ausencia.entity';
+import { Cita } from '../../citas/entities/cita.entity';
 
-@Entity('usuarios')
+@Entity({ name: 'usuarios' })
 export class Usuario {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'id_rol' })
-  idRol: string;
-
-  @Column({ length: 100 })
+  @Column('varchar', { length: 100 })
   nombre: string;
 
-  @Column({ length: 150 })
+  @Column('varchar', { length: 150 })
   apellidos: string;
 
-  @Column({ length: 150, unique: true })
+  @Column('varchar', { length: 20, unique: true, nullable: true })
+  dni: string;
+
+  @Column('varchar', { length: 20, nullable: true })
+  telefono: string;
+
+  @Column('varchar', { length: 150, unique: true })
   email: string;
 
-  @Column({ name: 'password_hash', length: 255 })
+  @Column('varchar', { name: 'password_hash', length: 255 })
   passwordHash: string;
 
-  @Column({ name: 'foto_url', length: 255, nullable: true })
+  @Column('varchar', { name: 'foto_url', length: 255, nullable: true })
   fotoUrl: string;
 
-  @ManyToOne(() => Rol, (rol) => rol.usuarios)
+  @Column('boolean', { default: true })
+  activo: boolean;
+
+  @ManyToOne(() => Entidad, (entidad) => entidad.usuarios, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'id_entidad' })
+  entidad: Entidad;
+
+  @Column({ name: 'id_entidad', nullable: true })
+  idEntidad: string;
+
+  @ManyToOne(() => Rol, (rol) => rol.usuarios, { eager: true })
   @JoinColumn({ name: 'id_rol' })
   rol: Rol;
+
+  @Column({ name: 'id_rol' })
+  idRol: string;
 
   @OneToMany(() => Ausencia, (ausencia) => ausencia.usuario)
   ausencias: Ausencia[];
 
   @OneToMany(() => Cita, (cita) => cita.usuarioAsignado)
-  citas: Cita[];
+  citasAsignadas: Cita[];
 
-  @OneToMany(() => AsignacionMesa, (asignacion) => asignacion.usuario)
-  asignacionesMesas: AsignacionMesa[];
+  @OneToMany(() => Cita, (cita) => cita.cliente)
+  citasComoCliente: Cita[];
 }

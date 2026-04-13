@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/unbound-method */
 import {
   Controller,
   Get,
@@ -6,68 +7,50 @@ import {
   Patch,
   Param,
   Delete,
-  ParseUUIDPipe,
   Query,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { UsuariosService } from './usuarios.service';
 import { CreateUsuarioDto, UpdateUsuarioDto } from './dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 import { UsuarioAdapter } from './adapters/usuario.adapter';
-import { Auth } from '../auth/decorators';
-import { ValidRoles } from '../auth/interfaces';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
 
-@ApiTags('Users')
-@ApiBearerAuth()
-@Controller('users')
+@ApiTags('Usuarios')
+@Controller('usuarios')
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
   @Post()
-  @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Create a new user (Admin only)' })
+  @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'User created successfully.' })
-  @ApiResponse({ status: 400, description: 'Invalid input.' })
-  @ApiResponse({ status: 409, description: 'User already exists.' })
+  @ApiResponse({ status: 400, description: 'Bad request.' })
   async create(@Body() createUsuarioDto: CreateUsuarioDto) {
     const usuario = await this.usuariosService.create(createUsuarioDto);
     return UsuarioAdapter.toResponse(usuario);
   }
 
   @Get()
-  @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Get a list of all users with pagination' })
-  @ApiResponse({ status: 200, description: 'Users found successfully.' })
+  @ApiOperation({ summary: 'Get all users with pagination' })
+  @ApiResponse({ status: 200, description: 'Return all users.' })
   async findAll(@Query() paginationDto: PaginationDto) {
-    const { data, meta } = await this.usuariosService.findAll(paginationDto);
-    return {
-      data: UsuarioAdapter.toResponseList(data),
-      meta,
-    };
+    const usuarios = await this.usuariosService.findAll(paginationDto);
+    return usuarios.map(UsuarioAdapter.toResponse);
   }
 
   @Get(':id')
-  @Auth(ValidRoles.admin, ValidRoles.empleado)
-  @ApiOperation({ summary: 'Get one user by ID' })
-  @ApiResponse({ status: 200, description: 'User found successfully.' })
+  @ApiOperation({ summary: 'Get a user by ID' })
+  @ApiResponse({ status: 200, description: 'Return the user.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
-  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+  async findOne(@Param('id') id: string) {
     const usuario = await this.usuariosService.findOne(id);
     return UsuarioAdapter.toResponse(usuario);
   }
 
   @Patch(':id')
-  @Auth(ValidRoles.admin, ValidRoles.empleado)
-  @ApiOperation({ summary: 'Update a user by ID' })
+  @ApiOperation({ summary: 'Update a user' })
   @ApiResponse({ status: 200, description: 'User updated successfully.' })
-  @ApiResponse({ status: 404, description: 'User not found.' })
   async update(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id') id: string,
     @Body() updateUsuarioDto: UpdateUsuarioDto,
   ) {
     const usuario = await this.usuariosService.update(id, updateUsuarioDto);
@@ -75,11 +58,10 @@ export class UsuariosController {
   }
 
   @Delete(':id')
-  @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Delete a user by ID (Admin only)' })
+  @ApiOperation({ summary: 'Delete a user' })
   @ApiResponse({ status: 200, description: 'User deleted successfully.' })
-  @ApiResponse({ status: 404, description: 'User not found.' })
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.usuariosService.remove(id);
+  async remove(@Param('id') id: string) {
+    await this.usuariosService.remove(id);
+    return { message: 'User deleted' };
   }
 }
