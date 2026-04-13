@@ -21,7 +21,7 @@ export class EntidadesController {
   constructor(private readonly entidadesService: EntidadesService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Crear una nueva entidad (Tenant)' })
+  @ApiOperation({ summary: 'Create a new entity (Tenant)' })
   @ApiResponse({
     status: 201,
     description: 'La entidad ha sido creada exitosamente.',
@@ -32,21 +32,21 @@ export class EntidadesController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'Obtener lista de entidades paginada' })
+  @ApiOperation({ summary: 'Get a paginated list of entities' })
   async findAll(@Query() paginationDto: PaginationDto) {
     const entidades = await this.entidadesService.findAll(paginationDto);
     return entidades.map(EntidadAdapter.toResponse);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Obtener una entidad por su ID' })
+  @ApiOperation({ summary: 'Get an entity by ID' })
   async findOne(@Param('id') id: string) {
     const entidad = await this.entidadesService.findOne(id);
     return EntidadAdapter.toResponse(entidad);
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Actualizar los datos de una entidad' })
+  @ApiOperation({ summary: 'Update an entity' })
   async update(
     @Param('id') id: string,
     @Body() updateEntidadDto: UpdateEntidadDto,
@@ -56,7 +56,7 @@ export class EntidadesController {
   }
 
   @Delete(':id')
-  @ApiOperation({ summary: 'Eliminar una entidad' })
+  @ApiOperation({ summary: 'Delete an entity' })
   async remove(@Param('id') id: string) {
     await this.entidadesService.remove(id);
     return { message: `Entidad con id ${id} eliminada correctamente` };
