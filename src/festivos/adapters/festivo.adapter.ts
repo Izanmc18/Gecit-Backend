@@ -2,7 +2,7 @@ import { Festivo } from '../entities/festivo.entity';
 
 export class FestivoResponse {
   id: string;
-  idOficina: string;
+  idEntidad: string;
   fecha: string;
   descripcion: string | null;
 }
@@ -11,7 +11,7 @@ export class FestivoAdapter {
   static toResponse(festivo: Festivo): FestivoResponse {
     return {
       id: festivo.id,
-      idOficina: festivo.idOficina,
+      idEntidad: festivo.idEntidad,
       fecha: festivo.fecha,
       descripcion: festivo.descripcion || null,
     };

@@ -38,6 +38,10 @@ export class HorariosController {
   @Get()
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get a list of all schedules' })
+  @ApiResponse({
+    status: 201,
+    description: 'Schedules found successfully.',
+  })
   async findAll() {
     const horarios = await this.horariosService.findAll();
     return HorarioAdapter.toResponseList(horarios);
@@ -46,6 +50,10 @@ export class HorariosController {
   @Get(':id')
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get one schedule by ID' })
+  @ApiResponse({
+    status: 201,
+    description: 'Schedule found successfully.',
+  })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const horario = await this.horariosService.findOne(id);
     return HorarioAdapter.toResponse(horario);
@@ -54,6 +62,10 @@ export class HorariosController {
   @Patch(':id')
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Update a schedule by ID (Admin only)' })
+  @ApiResponse({
+    status: 201,
+    description: 'Schedule updated successfully.',
+  })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateHorarioDto: UpdateHorarioDto,
@@ -65,6 +77,10 @@ export class HorariosController {
   @Delete(':id')
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Delete a schedule by ID (Admin only)' })
+  @ApiResponse({
+    status: 201,
+    description: 'Schedule deleted successfully.',
+  })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.horariosService.remove(id);
   }

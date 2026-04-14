@@ -5,12 +5,14 @@ import {
   ManyToOne,
   JoinColumn,
   OneToMany,
+  ManyToMany,
 } from 'typeorm';
 import { Rol } from '../../roles/entities/rol.entity';
 import { Entidad } from '../../entidades/entities/entidad.entity';
 import { Ausencia } from '../../ausencias/entities/ausencia.entity';
 import { Cita } from '../../citas/entities/cita.entity';
 import { AsignacionMesa } from '../../asignacion-mesas/entities/asignacion-mesa.entity';
+import { Competencia } from '../../competencias/entities/competencia.entity';
 
 @Entity({ name: 'usuarios' })
 export class Usuario {
@@ -69,4 +71,7 @@ export class Usuario {
 
   @OneToMany(() => AsignacionMesa, (asignacion) => asignacion.usuario)
   asignacionesMesas: AsignacionMesa[];
+
+  @ManyToMany(() => Competencia, (competencia) => competencia.usuarios)
+  competencias: Competencia[];
 }

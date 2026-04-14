@@ -5,15 +5,15 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Oficina } from '../../oficinas/entities/oficina.entity';
+import { Entidad } from '../../entidades/entities/entidad.entity';
 
 @Entity('horarios')
 export class Horario {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'id_oficina' })
-  idOficina: string;
+  @Column({ name: 'id_entidad' })
+  idEntidad: string;
 
   @Column({ name: 'fecha_inicio', type: 'date' })
   fechaInicio: string;
@@ -27,9 +27,9 @@ export class Horario {
   @Column({ name: 'hora_cierre', type: 'time' })
   horaCierre: string;
 
-  @ManyToOne(() => Oficina, (oficina) => oficina.horarios, {
+  @ManyToOne(() => Entidad, (entidad) => entidad.horarios, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'id_oficina' })
-  oficina: Oficina;
+  @JoinColumn({ name: 'id_entidad' })
+  entidad: Entidad;
 }

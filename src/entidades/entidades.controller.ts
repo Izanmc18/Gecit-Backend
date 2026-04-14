@@ -15,8 +15,8 @@ import { CreateEntidadDto, UpdateEntidadDto } from './dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { EntidadAdapter } from './adapters/entidad.adapter';
 
-@ApiTags('Entidades (Multitenant)')
-@Controller('entidades')
+@ApiTags('Entities (Multitenant)')
+@Controller('entities')
 export class EntidadesController {
   constructor(private readonly entidadesService: EntidadesService) {}
 
@@ -24,7 +24,7 @@ export class EntidadesController {
   @ApiOperation({ summary: 'Create a new entity (Tenant)' })
   @ApiResponse({
     status: 201,
-    description: 'La entidad ha sido creada exitosamente.',
+    description: 'Entity created successfully.',
   })
   async create(@Body() createEntidadDto: CreateEntidadDto) {
     const entidad = await this.entidadesService.create(createEntidadDto);
@@ -33,6 +33,10 @@ export class EntidadesController {
 
   @Get()
   @ApiOperation({ summary: 'Get a paginated list of entities' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of entities',
+  })
   async findAll(@Query() paginationDto: PaginationDto) {
     const entidades = await this.entidadesService.findAll(paginationDto);
     return entidades.map(EntidadAdapter.toResponse);
@@ -40,6 +44,10 @@ export class EntidadesController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get an entity by ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Entity found successfully.',
+  })
   async findOne(@Param('id') id: string) {
     const entidad = await this.entidadesService.findOne(id);
     return EntidadAdapter.toResponse(entidad);
@@ -47,6 +55,10 @@ export class EntidadesController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update an entity' })
+  @ApiResponse({
+    status: 200,
+    description: 'Entity updated successfully.',
+  })
   async update(
     @Param('id') id: string,
     @Body() updateEntidadDto: UpdateEntidadDto,
@@ -57,6 +69,10 @@ export class EntidadesController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete an entity' })
+  @ApiResponse({
+    status: 200,
+    description: 'Entity deleted successfully.',
+  })
   async remove(@Param('id') id: string) {
     await this.entidadesService.remove(id);
     return { message: `Entidad con id ${id} eliminada correctamente` };

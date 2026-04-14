@@ -38,6 +38,10 @@ export class SalasController {
   @Get()
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get all rooms' })
+  @ApiResponse({
+    status: 201,
+    description: 'Rooms found successfully.',
+  })
   async findAll() {
     const salas = await this.salasService.findAll();
     return SalaAdapter.toResponseList(salas);
@@ -46,6 +50,10 @@ export class SalasController {
   @Get(':id')
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get a room by ID' })
+  @ApiResponse({
+    status: 201,
+    description: 'Room found successfully.',
+  })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const sala = await this.salasService.findOne(id);
     return SalaAdapter.toResponse(sala);
@@ -54,6 +62,10 @@ export class SalasController {
   @Patch(':id')
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Update a room' })
+  @ApiResponse({
+    status: 201,
+    description: 'Room updated successfully.',
+  })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateSalaDto: UpdateSalaDto,
@@ -65,6 +77,10 @@ export class SalasController {
   @Delete(':id')
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Delete a room' })
+  @ApiResponse({
+    status: 201,
+    description: 'Room deleted successfully.',
+  })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.salasService.remove(id);
   }

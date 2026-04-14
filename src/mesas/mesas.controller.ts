@@ -38,6 +38,10 @@ export class MesasController {
   @Get()
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get all tables' })
+  @ApiResponse({
+    status: 201,
+    description: 'Tables found successfully.',
+  })
   async findAll() {
     const mesas = await this.mesasService.findAll();
     return MesaAdapter.toResponseList(mesas);
@@ -46,6 +50,10 @@ export class MesasController {
   @Get(':id')
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get a table by ID' })
+  @ApiResponse({
+    status: 201,
+    description: 'Table found successfully.',
+  })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const mesa = await this.mesasService.findOne(id);
     return MesaAdapter.toResponse(mesa);
@@ -54,6 +62,10 @@ export class MesasController {
   @Patch(':id')
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Update a table' })
+  @ApiResponse({
+    status: 201,
+    description: 'Table updated successfully.',
+  })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateMesaDto: UpdateMesaDto,
@@ -65,6 +77,10 @@ export class MesasController {
   @Delete(':id')
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Delete a table' })
+  @ApiResponse({
+    status: 201,
+    description: 'Table deleted successfully.',
+  })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.mesasService.remove(id);
   }

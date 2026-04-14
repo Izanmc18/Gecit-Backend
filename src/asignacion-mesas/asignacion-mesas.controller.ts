@@ -45,6 +45,10 @@ export class AsignacionMesasController {
   @Get()
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get a list of all desk assignments' })
+  @ApiResponse({
+    status: 201,
+    description: 'Desk assignments found successfully.',
+  })
   async findAll() {
     const asignaciones = await this.asignacionMesasService.findAll();
     return AsignacionMesaAdapter.toResponseList(asignaciones);
@@ -53,6 +57,10 @@ export class AsignacionMesasController {
   @Get(':id')
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get one desk assignment by ID' })
+  @ApiResponse({
+    status: 201,
+    description: 'Desk assignment found successfully.',
+  })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const asignacion = await this.asignacionMesasService.findOne(id);
     return AsignacionMesaAdapter.toResponse(asignacion);
@@ -61,6 +69,10 @@ export class AsignacionMesasController {
   @Patch(':id')
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Update a desk assignment by ID (Admin only)' })
+  @ApiResponse({
+    status: 201,
+    description: 'Desk assignment updated successfully.',
+  })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateAsignacionMesaDto: UpdateAsignacionMesaDto,
@@ -75,6 +87,10 @@ export class AsignacionMesasController {
   @Delete(':id')
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Delete a desk assignment by ID (Admin only)' })
+  @ApiResponse({
+    status: 201,
+    description: 'Desk assignment deleted successfully.',
+  })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.asignacionMesasService.remove(id);
   }

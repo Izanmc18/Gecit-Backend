@@ -4,6 +4,9 @@ export class MesaResponse {
   id: string;
   idSala: string;
   nombreMesa: string;
+  posX: number;
+  posY: number;
+  rotacion: number;
 }
 
 export class MesaAdapter {
@@ -12,6 +15,9 @@ export class MesaAdapter {
       id: mesa.id,
       idSala: mesa.idSala,
       nombreMesa: mesa.nombreMesa,
+      posX: mesa.posX,
+      posY: mesa.posY,
+      rotacion: mesa.rotacion,
     };
   }
 

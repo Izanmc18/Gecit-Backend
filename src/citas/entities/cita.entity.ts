@@ -4,11 +4,20 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { Usuario } from '../../usuarios/entities/usuario.entity';
 import { Mesa } from '../../mesas/entities/mesa.entity';
 import { Tramite } from '../../tramites/entities/tramite.entity';
 import { Entidad } from '../../entidades/entities/entidad.entity';
+import { TurnoLlegada } from '../../turnos-llegada/entities/turno-llegada.entity';
+
+export enum EstadoCita {
+  PENDIENTE = 'Pendiente',
+  REALIZADA = 'Realizada',
+  NO_PRESENTADO = 'No presentado',
+  CANCELADA = 'Cancelada',
+}
 
 @Entity({ name: 'citas' })
 export class Cita {
@@ -33,11 +42,12 @@ export class Cita {
   @Column('datetime', { name: 'fecha_hora' })
   fechaHora: Date;
 
-  @Column('enum', {
-    enum: ['Pendiente', 'Realizada', 'No presentado', 'Cancelada'],
-    default: 'Pendiente',
+  @Column({
+    type: 'enum',
+    enum: EstadoCita,
+    default: EstadoCita.PENDIENTE,
   })
-  estado: string;
+  estado: EstadoCita;
 
   @Column('text', { nullable: true })
   observaciones: string;
@@ -78,4 +88,7 @@ export class Cita {
 
   @Column({ name: 'id_tramite' })
   idTramite: string;
+
+  @OneToOne(() => TurnoLlegada, (turno) => turno.cita)
+  turnoLlegada: TurnoLlegada;
 }

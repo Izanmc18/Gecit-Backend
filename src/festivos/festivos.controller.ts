@@ -38,6 +38,10 @@ export class FestivosController {
   @Get()
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get a list of all holidays' })
+  @ApiResponse({
+    status: 201,
+    description: 'Holidays found successfully.',
+  })
   async findAll() {
     const festivos = await this.festivosService.findAll();
     return FestivoAdapter.toResponseList(festivos);
@@ -46,6 +50,10 @@ export class FestivosController {
   @Get(':id')
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get one holiday by ID' })
+  @ApiResponse({
+    status: 201,
+    description: 'Holiday found successfully.',
+  })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const festivo = await this.festivosService.findOne(id);
     return FestivoAdapter.toResponse(festivo);
@@ -54,6 +62,10 @@ export class FestivosController {
   @Patch(':id')
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Update a holiday by ID (Admin only)' })
+  @ApiResponse({
+    status: 201,
+    description: 'Holiday updated successfully.',
+  })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateFestivoDto: UpdateFestivoDto,
@@ -65,6 +77,10 @@ export class FestivosController {
   @Delete(':id')
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Delete a holiday by ID (Admin only)' })
+  @ApiResponse({
+    status: 201,
+    description: 'Holiday deleted successfully.',
+  })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.festivosService.remove(id);
   }

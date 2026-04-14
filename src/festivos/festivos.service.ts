@@ -17,13 +17,13 @@ export class FestivosService {
   }
 
   async findAll(): Promise<Festivo[]> {
-    return await this.festivoRepository.find({ relations: ['oficina'] });
+    return await this.festivoRepository.find({ relations: ['entidad'] });
   }
 
   async findOne(id: string): Promise<Festivo> {
     const festivo = await this.festivoRepository.findOne({
       where: { id },
-      relations: ['oficina'],
+      relations: ['entidad'],
     });
 
     if (!festivo)

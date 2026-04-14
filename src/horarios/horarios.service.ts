@@ -17,13 +17,13 @@ export class HorariosService {
   }
 
   async findAll(): Promise<Horario[]> {
-    return await this.horarioRepository.find({ relations: ['oficina'] });
+    return await this.horarioRepository.find({ relations: ['entidad'] });
   }
 
   async findOne(id: string): Promise<Horario> {
     const horario = await this.horarioRepository.findOne({
       where: { id },
-      relations: ['oficina'],
+      relations: ['entidad'],
     });
 
     if (!horario)

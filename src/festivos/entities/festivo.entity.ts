@@ -5,15 +5,15 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Oficina } from '../../oficinas/entities/oficina.entity';
+import { Entidad } from '../../entidades/entities/entidad.entity';
 
 @Entity('festivos')
 export class Festivo {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'id_oficina' })
-  idOficina: string;
+  @Column({ name: 'id_entidad' })
+  idEntidad: string;
 
   @Column({ type: 'date' })
   fecha: string;
@@ -21,9 +21,9 @@ export class Festivo {
   @Column({ length: 150, nullable: true })
   descripcion: string;
 
-  @ManyToOne(() => Oficina, (oficina) => oficina.festivos, {
+  @ManyToOne(() => Entidad, (entidad) => entidad.festivos, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'id_oficina' })
-  oficina: Oficina;
+  @JoinColumn({ name: 'id_entidad' })
+  entidad: Entidad;
 }

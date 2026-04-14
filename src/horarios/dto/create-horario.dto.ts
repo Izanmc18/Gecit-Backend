@@ -9,15 +9,15 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateHorarioDto {
   @ApiProperty({
-    description: 'The ID of the office',
+    description: 'ID de la entidad (organización)',
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
   @IsUUID()
   @IsNotEmpty()
-  idOficina: string;
+  idEntidad: string;
 
   @ApiProperty({
-    description: 'The start date of this schedule',
+    description: 'Fecha de inicio del horario',
     example: '2024-01-01',
   })
   @IsDateString()
@@ -25,14 +25,14 @@ export class CreateHorarioDto {
   fechaInicio: string;
 
   @ApiProperty({
-    description: 'The end date of this schedule',
+    description: 'Fecha de fin del horario',
     example: '2024-12-31',
   })
   @IsDateString()
   @IsNotEmpty()
   fechaFin: string;
 
-  @ApiProperty({ description: 'The opening time', example: '08:00' })
+  @ApiProperty({ description: 'Hora de apertura', example: '08:00' })
   @IsString()
   @IsNotEmpty()
   @Matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, {
@@ -40,7 +40,7 @@ export class CreateHorarioDto {
   })
   horaApertura: string;
 
-  @ApiProperty({ description: 'The closing time', example: '15:00' })
+  @ApiProperty({ description: 'Hora de cierre', example: '15:00' })
   @IsString()
   @IsNotEmpty()
   @Matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$/, {

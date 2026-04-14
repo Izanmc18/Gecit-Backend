@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { APP_GUARD } from '@nestjs/core'; // Importante para el Guard Global
+import { APP_GUARD } from '@nestjs/core';
 
 import { EntidadesModule } from './entidades/entidades.module';
 import { RolesModule } from './roles/roles.module';
@@ -16,6 +16,9 @@ import { AsignacionMesasModule } from './asignacion-mesas/asignacion-mesas.modul
 import { UsuariosModule } from './usuarios/usuarios.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { CompetenciasModule } from './competencias/competencias.module';
+import { TurnosLlegadaModule } from './turnos-llegada/turnos-llegada.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -52,6 +55,9 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     AsignacionMesasModule,
     UsuariosModule,
     AuthModule,
+    CompetenciasModule,
+    TurnosLlegadaModule,
+    AnalyticsModule,
   ],
   providers: [
     {

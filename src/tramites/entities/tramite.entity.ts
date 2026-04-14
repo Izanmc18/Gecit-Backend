@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Cita } from '../../citas/entities/cita.entity';
 import { Entidad } from '../../entidades/entities/entidad.entity';
+import { Competencia } from '../../competencias/entities/competencia.entity';
 
 @Entity({ name: 'tramites' })
 export class Tramite {
@@ -26,6 +27,13 @@ export class Tramite {
 
   @Column({ name: 'id_entidad' })
   idEntidad: string;
+
+  @ManyToOne(() => Competencia, { nullable: true, onDelete: 'SET NULL' })
+  @JoinColumn({ name: 'id_competencia_requerida' })
+  competenciaRequerida: Competencia;
+
+  @Column({ name: 'id_competencia_requerida', nullable: true })
+  idCompetenciaRequerida: string;
 
   @OneToMany(() => Cita, (cita) => cita.tramite)
   citas: Cita[];

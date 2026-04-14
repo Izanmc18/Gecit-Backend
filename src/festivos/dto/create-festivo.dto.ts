@@ -10,15 +10,15 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateFestivoDto {
   @ApiProperty({
-    description: 'The ID of the office',
+    description: 'ID de la entidad (organización)',
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
   @IsUUID()
   @IsNotEmpty()
-  idOficina: string;
+  idEntidad: string;
 
   @ApiProperty({
-    description: 'The date of the holiday',
+    description: 'Fecha del festivo (YYYY-MM-DD)',
     example: '2024-12-25',
   })
   @IsDateString()
@@ -26,7 +26,7 @@ export class CreateFestivoDto {
   fecha: string;
 
   @ApiPropertyOptional({
-    description: 'Description of the holiday',
+    description: 'Descripción del festivo',
     example: 'Navidad',
   })
   @IsString()

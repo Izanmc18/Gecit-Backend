@@ -15,8 +15,8 @@ import { CreateUsuarioDto, UpdateUsuarioDto } from './dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { UsuarioAdapter } from './adapters/usuario.adapter';
 
-@ApiTags('Usuarios')
-@Controller('usuarios')
+@ApiTags('Users')
+@Controller('users')
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
@@ -32,6 +32,7 @@ export class UsuariosController {
   @Get()
   @ApiOperation({ summary: 'Get all users with pagination' })
   @ApiResponse({ status: 200, description: 'Return all users.' })
+  @ApiResponse({ status: 404, description: 'Users not found.' })
   async findAll(@Query() paginationDto: PaginationDto) {
     const usuarios = await this.usuariosService.findAll(paginationDto);
     return usuarios.map(UsuarioAdapter.toResponse);
@@ -49,6 +50,7 @@ export class UsuariosController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update a user' })
   @ApiResponse({ status: 200, description: 'User updated successfully.' })
+  @ApiResponse({ status: 404, description: 'User not found.' })
   async update(
     @Param('id') id: string,
     @Body() updateUsuarioDto: UpdateUsuarioDto,
@@ -60,6 +62,7 @@ export class UsuariosController {
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a user' })
   @ApiResponse({ status: 200, description: 'User deleted successfully.' })
+  @ApiResponse({ status: 404, description: 'User not found.' })
   async remove(@Param('id') id: string) {
     await this.usuariosService.remove(id);
     return { message: 'User deleted' };

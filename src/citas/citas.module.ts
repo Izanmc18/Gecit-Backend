@@ -5,9 +5,23 @@ import { CitasController } from './citas.controller';
 import { Cita } from './entities/cita.entity';
 import { Mesa } from '../mesas/entities/mesa.entity';
 import { Festivo } from '../festivos/entities/festivo.entity';
+import { Entidad } from '../entidades/entities/entidad.entity';
+import { Horario } from '../horarios/entities/horario.entity';
+import { Ausencia } from '../ausencias/entities/ausencia.entity';
+import { Usuario } from '../usuarios/entities/usuario.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Cita, Mesa, Festivo])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Cita,
+      Mesa,
+      Festivo,
+      Entidad,
+      Horario,
+      Ausencia,
+      Usuario,
+    ]),
+  ],
   controllers: [CitasController],
   providers: [CitasService],
   exports: [TypeOrmModule, CitasService],

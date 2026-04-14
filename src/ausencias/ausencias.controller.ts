@@ -16,11 +16,10 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { AusenciasService } from './ausencias.service';
-import { CreateAusenciaDto, UpdateAusenciaDto } from './dto';
+import { CreateAusenciaDto, UpdateAusenciaDto, FilterAusenciaDto } from './dto';
 import { AusenciaAdapter } from './adapters/ausencia.adapter';
 import { Auth } from '../auth/decorators';
 import { ValidRoles } from '../auth/interfaces';
-import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 @ApiTags('Absences')
 @ApiBearerAuth()
@@ -43,17 +42,50 @@ export class AusenciasController {
   @Get()
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get a list of all absence requests' })
-  async findAll(@Query() paginationDto: PaginationDto) {
-    const { data, meta } = await this.ausenciasService.findAll(paginationDto);
+  @ApiResponse({
+    status: 201,
+    description: 'Absence requests found successfully.',
+  })
+  async findAll(@Query() filterAusenciaDto: FilterAusenciaDto) {
+    const { data, meta } =
+      await this.ausenciasService.findAll(filterAusenciaDto);
     return {
       data: AusenciaAdapter.toResponseList(data),
       meta,
     };
   }
 
+  @Patch(':id/approve')
+  @Auth(ValidRoles.admin)
+  @ApiOperation({ summary: 'Approve an absence request (Admin)' })
+  @ApiResponse({
+    status: 201,
+    description: 'Absence request approved successfully.',
+  })
+  async approve(@Param('id', ParseUUIDPipe) id: string) {
+    const ausencia = await this.ausenciasService.approve(id);
+    return AusenciaAdapter.toResponse(ausencia);
+  }
+
+  @Patch(':id/reject')
+  @Auth(ValidRoles.admin)
+  @ApiOperation({ summary: 'Reject an absence request (Admin)' })
+  @ApiResponse({
+    status: 201,
+    description: 'Absence request rejected successfully.',
+  })
+  async reject(@Param('id', ParseUUIDPipe) id: string) {
+    const ausencia = await this.ausenciasService.reject(id);
+    return AusenciaAdapter.toResponse(ausencia);
+  }
+
   @Get(':id')
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get one absence request by ID' })
+  @ApiResponse({
+    status: 201,
+    description: 'Absence request found successfully.',
+  })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const ausencia = await this.ausenciasService.findOne(id);
     return AusenciaAdapter.toResponse(ausencia);
@@ -62,6 +94,10 @@ export class AusenciasController {
   @Patch(':id')
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Update an absence request by ID' })
+  @ApiResponse({
+    status: 201,
+    description: 'Absence request updated successfully.',
+  })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateAusenciaDto: UpdateAusenciaDto,
@@ -73,6 +109,10 @@ export class AusenciasController {
   @Delete(':id')
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Delete an absence request by ID' })
+  @ApiResponse({
+    status: 201,
+    description: 'Absence request deleted successfully.',
+  })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.ausenciasService.remove(id);
   }

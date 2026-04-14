@@ -24,6 +24,11 @@ export class CreateUsuarioDto {
   @IsOptional()
   dni?: string;
 
+  @ApiPropertyOptional({ example: '+34600123456' })
+  @IsString()
+  @IsOptional()
+  telefono?: string;
+
   @ApiProperty({ example: 'izan@example.com' })
   @IsEmail()
   email: string;
@@ -41,4 +46,9 @@ export class CreateUsuarioDto {
   @IsUUID()
   @IsOptional()
   idEntidad?: string;
+
+  @ApiPropertyOptional({ example: 'https://mi-imagen.com/foto.jpg' })
+  @IsString()
+  @IsOptional()
+  fotoUrl?: string;
 }

@@ -39,6 +39,7 @@ export class RolesController {
   @Get()
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Get all roles (Admin only)' })
+  @ApiResponse({ status: 200, description: 'List of roles' })
   async findAll() {
     const roles = await this.rolesService.findAll();
     return RolAdapter.toResponseList(roles);
@@ -47,6 +48,10 @@ export class RolesController {
   @Get(':id')
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Get a role by ID' })
+  @ApiResponse({
+    status: 201,
+    description: 'Role found successfully.',
+  })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const rol = await this.rolesService.findOne(id);
     return RolAdapter.toResponse(rol);
@@ -55,6 +60,10 @@ export class RolesController {
   @Patch(':id')
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Update a role' })
+  @ApiResponse({
+    status: 201,
+    description: 'Role updated successfully.',
+  })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateRolDto: UpdateRolDto,
@@ -66,6 +75,10 @@ export class RolesController {
   @Delete(':id')
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Delete a role' })
+  @ApiResponse({
+    status: 201,
+    description: 'Role deleted successfully.',
+  })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.rolesService.remove(id);
   }

@@ -11,6 +11,8 @@ import { Tramite } from '../../tramites/entities/tramite.entity';
 import { Festivo } from '../../festivos/entities/festivo.entity';
 import { Horario } from '../../horarios/entities/horario.entity';
 import { Cita } from '../../citas/entities/cita.entity';
+import { Competencia } from '../../competencias/entities/competencia.entity';
+import { TurnoLlegada } from '../../turnos-llegada/entities/turno-llegada.entity';
 
 @Entity({ name: 'entidades' })
 export class Entidad {
@@ -35,7 +37,7 @@ export class Entidad {
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;
 
-  // RELACIONES INVERSAS (Solucionan los errores del IDE)
+  // RELACIONES INVERSAS
 
   @OneToMany(() => Usuario, (usuario) => usuario.entidad)
   usuarios: Usuario[];
@@ -54,4 +56,10 @@ export class Entidad {
 
   @OneToMany(() => Cita, (cita) => cita.entidad)
   citas: Cita[];
+
+  @OneToMany(() => Competencia, (competencia) => competencia.entidad)
+  competencias: Competencia[];
+
+  @OneToMany(() => TurnoLlegada, (turno) => turno.entidad)
+  turnosLlegada: TurnoLlegada[];
 }
