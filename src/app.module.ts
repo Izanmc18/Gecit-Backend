@@ -30,17 +30,22 @@ import { AnalyticsModule } from './analytics/analytics.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        type: 'mysql',
-        host: config.get<string>('DB_HOST'),
-        port: config.get<number>('DB_PORT'),
-        username: config.get<string>('DB_USER'),
-        password: config.get<string>('DB_PASS'),
-        database: config.get<string>('DB_NAME'),
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: false,
-        autoLoadEntities: true,
-      }),
+      useFactory: (config: ConfigService) => {
+        const host = config.get<string>('DB_HOST');
+        const db = config.get<string>('DB_NAME');
+        console.log(`Conectando a base de datos: ${db} en ${host}`);
+        return {
+          type: 'mysql',
+          host: host,
+          port: config.get<number>('DB_PORT'),
+          username: config.get<string>('DB_USER'),
+          password: config.get<string>('DB_PASS'),
+          database: db,
+          entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          synchronize: false,
+          autoLoadEntities: true,
+        };
+      },
     }),
 
     EntidadesModule,

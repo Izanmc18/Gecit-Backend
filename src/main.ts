@@ -6,6 +6,11 @@ import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: true, // Permite cualquier origen en desarrollo (muy útil si el puerto de Angular cambia)
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
   const logger = new Logger('Bootstrap');
 
   // Prefijo global para todas las rutas de la API

@@ -16,10 +16,8 @@ export class AuthService {
   ) {}
 
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
-    const { email, password } = loginDto;
-
     const usuario = await this.usuarioRepository.findOne({
-      where: { email },
+      where: { email: loginDto.email },
       select: [
         'id',
         'nombre',
@@ -31,15 +29,19 @@ export class AuthService {
       ],
     });
 
-    if (!usuario || !(await bcrypt.compare(password, usuario.passwordHash))) {
+    if (!usuario) {
+      throw new UnauthorizedException('Credenciales incorrectas');
+    }
+
+    if (!(await bcrypt.compare(loginDto.password, usuario.passwordHash))) {
       throw new UnauthorizedException('Credenciales incorrectas');
     }
 
     const payload = AuthAdapter.toPayload(usuario);
 
     return {
-      accessToken: this.jwtService.sign(payload),
-      usuario: AuthAdapter.toLoginUserDto(usuario),
+      token: this.jwtService.sign(payload),
+      user: AuthAdapter.toLoginUserDto(usuario),
     };
   }
 }

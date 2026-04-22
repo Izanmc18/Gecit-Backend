@@ -19,7 +19,8 @@ export class CreateTurnoLlegadaDto {
   idEntidad: string;
 
   @ApiPropertyOptional({
-    description: 'ID de la cita vinculada (null si es atención sin cita previa)',
+    description:
+      'ID de la cita vinculada (null si es atención sin cita previa)',
     example: '123e4567-e89b-12d3-a456-426614174001',
   })
   @IsUUID()

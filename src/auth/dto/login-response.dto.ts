@@ -8,6 +8,6 @@ export class LoginUserDto {
 }
 
 export class LoginResponseDto {
-  accessToken: string;
-  usuario: LoginUserDto;
+  token: string;
+  user: LoginUserDto;
 }
