@@ -29,7 +29,10 @@ export class TramitesService {
     }
   }
 
-  async findAll() {
+  async findAll(idEntidad?: string) {
+    if (idEntidad) {
+      return this.tramiteRepository.find({ where: { idEntidad } });
+    }
     return this.tramiteRepository.find();
   }
 

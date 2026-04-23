@@ -7,18 +7,21 @@ import {
   Param,
   Delete,
   ParseUUIDPipe,
+  Query,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { TramitesService } from './tramites.service';
 import { CreateTramiteDto, UpdateTramiteDto } from './dto';
 import { TramiteAdapter } from './adapters/tramite.adapter';
 import { Auth } from '../auth/decorators';
 import { ValidRoles } from '../auth/interfaces';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Procedures')
 @ApiBearerAuth()
@@ -36,19 +39,20 @@ export class TramitesController {
   }
 
   @Get()
-  @Auth(ValidRoles.admin, ValidRoles.empleado)
+  @Public()
   @ApiOperation({ summary: 'Get all procedures' })
+  @ApiQuery({ name: 'idEntidad', required: false })
   @ApiResponse({
     status: 201,
     description: 'Procedures found successfully.',
   })
-  async findAll() {
-    const tramites = await this.tramitesService.findAll();
+  async findAll(@Query('idEntidad') idEntidad?: string) {
+    const tramites = await this.tramitesService.findAll(idEntidad);
     return TramiteAdapter.toResponseList(tramites);
   }
 
   @Get(':id')
-  @Auth(ValidRoles.admin, ValidRoles.empleado)
+  @Public()
   @ApiOperation({ summary: 'Get a procedure by ID' })
   @ApiResponse({
     status: 201,
@@ -81,7 +85,8 @@ export class TramitesController {
     status: 201,
     description: 'Procedure deleted successfully.',
   })
-  remove(@Param('id', ParseUUIDPipe) id: string) {
-    return this.tramitesService.remove(id);
+  async remove(@Param('id', ParseUUIDPipe) id: string) {
+    await this.tramitesService.remove(id);
+    return { message: 'Procedure deleted successfully' };
   }
 }

@@ -104,20 +104,39 @@ export class TurnosLlegadaService {
     const hoy = new Date().toISOString().split('T')[0];
     const cita = await this.citaRepository
       .createQueryBuilder('cita')
+      .leftJoinAndSelect('cita.turnoLlegada', 'turnoLlegada')
       .innerJoin('cita.mesa', 'mesa')
       .innerJoin('mesa.sala', 'sala')
       .where('sala.idEntidad = :idEntidad', { idEntidad: checkinDto.idEntidad })
       .andWhere('cita.clienteDni = :dni', { dni: checkinDto.dni })
       .andWhere('DATE(cita.fechaHora) = :hoy', { hoy })
+      .andWhere('cita.estado = :estado', { estado: 'Pendiente' })
       .getOne();
 
     if (!cita) {
       throw new NotFoundException(
-        'No se encontró una cita válida para hoy con ese DNI',
+        'No se encontró una cita pendiente para hoy con ese DNI',
       );
     }
 
-    const ticketCode = Math.random().toString(36).substring(2, 6).toUpperCase();
+    if (cita.turnoLlegada) {
+      return {
+        ticket: cita.turnoLlegada.codigoTicket,
+        idCita: cita.id,
+        mensaje: 'Ya tienes un ticket generado',
+      };
+    }
+
+    const countHoy = await this.turnoRepository
+      .createQueryBuilder('turno')
+      .where('turno.idEntidad = :idEntidad', {
+        idEntidad: checkinDto.idEntidad,
+      })
+      .andWhere('DATE(turno.fechaGeneracion) = :hoy', { hoy })
+      .getCount();
+
+    const ticketCode = `A-${(countHoy + 1).toString().padStart(3, '0')}`;
+
     const turno = this.turnoRepository.create({
       idEntidad: checkinDto.idEntidad,
       idCita: cita.id,

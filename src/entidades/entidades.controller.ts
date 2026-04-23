@@ -14,6 +14,7 @@ import { EntidadesService } from './entidades.service';
 import { CreateEntidadDto, UpdateEntidadDto } from './dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { EntidadAdapter } from './adapters/entidad.adapter';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Entities (Multitenant)')
 @Controller('entities')
@@ -32,6 +33,7 @@ export class EntidadesController {
   }
 
   @Get()
+  @Public()
   @ApiOperation({ summary: 'Get a paginated list of entities' })
   @ApiResponse({
     status: 200,
@@ -43,6 +45,7 @@ export class EntidadesController {
   }
 
   @Get(':id')
+  @Public()
   @ApiOperation({ summary: 'Get an entity by ID' })
   @ApiResponse({
     status: 200,

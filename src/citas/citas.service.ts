@@ -190,6 +190,12 @@ export class CitasService {
     });
     if (esFestivo) return [];
 
+    // Validar que no sea fin de semana (sábado = 6, domingo = 0)
+    const diaSemana = new Date(fecha + 'T00:00:00').getDay();
+    if (diaSemana === 0 || diaSemana === 6) {
+      return []; // No hay citas los fines de semana
+    }
+
     const entidad = await this.entidadRepository.findOne({
       where: { id: idEntidad },
     });

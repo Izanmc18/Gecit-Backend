@@ -14,6 +14,7 @@ import { UsuariosService } from './usuarios.service';
 import { CreateUsuarioDto, UpdateUsuarioDto } from './dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { UsuarioAdapter } from './adapters/usuario.adapter';
+import { Public } from '../auth/decorators/public.decorator';
 
 @ApiTags('Users')
 @Controller('users')
@@ -30,6 +31,7 @@ export class UsuariosController {
   }
 
   @Get()
+  @Public()
   @ApiOperation({ summary: 'Get all users with pagination' })
   @ApiResponse({ status: 200, description: 'Return all users.' })
   @ApiResponse({ status: 404, description: 'Users not found.' })
