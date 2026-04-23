@@ -9,6 +9,7 @@ import { Entidad } from '../entidades/entities/entidad.entity';
 import { Horario } from '../horarios/entities/horario.entity';
 import { Ausencia } from '../ausencias/entities/ausencia.entity';
 import { Usuario } from '../usuarios/entities/usuario.entity';
+import { Tramite } from '../tramites/entities/tramite.entity';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { Usuario } from '../usuarios/entities/usuario.entity';
       Horario,
       Ausencia,
       Usuario,
+      Tramite,
     ]),
   ],
   controllers: [CitasController],

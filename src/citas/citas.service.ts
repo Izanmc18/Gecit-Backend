@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   BadRequestException,
@@ -13,6 +14,7 @@ import {
   SlotsFilterDto,
   ReasignarMasivoDto,
 } from './dto';
+import { Tramite } from 'src/tramites/entities/tramite.entity';
 import { Cita, EstadoCita } from './entities/cita.entity';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { Mesa } from 'src/mesas/entities/mesa.entity';
@@ -45,6 +47,9 @@ export class CitasService {
 
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
+
+    @InjectRepository(Tramite)
+    private readonly tramiteRepository: Repository<Tramite>,
   ) {}
 
   async create(createCitaDto: CreateCitaDto): Promise<Cita> {
@@ -192,21 +197,44 @@ export class CitasService {
       throw new NotFoundException(`Entidad ${idEntidad} no encontrada`);
     const duracion = entidad.duracionCitaMinutos || 30;
 
+    const tramite = await this.tramiteRepository.findOne({
+      where: { id: idTramite },
+      relations: ['competenciaRequerida'],
+    });
+    if (!tramite)
+      throw new NotFoundException(`Trámite ${idTramite} no encontrado`);
+    const idCompReq = tramite.idCompetenciaRequerida;
+
     const horarios = await this.horarioRepository.find({
       where: { idEntidad },
     });
     const horario =
       horarios.find((h) => fecha >= h.fechaInicio && fecha <= h.fechaFin) ||
       horarios[0];
+
     if (!horario) return [];
 
-    const usuarios = await this.usuarioRepository.find({
+    const todosLosUsuarios = await this.usuarioRepository.find({
       where: { idEntidad, activo: true },
       relations: ['ausencias', 'competencias'],
     });
 
-    const start = new Date(`${fecha}T${horario.horaApertura}`);
-    const end = new Date(`${fecha}T${horario.horaCierre}`);
+    const usuariosAptos = todosLosUsuarios.filter((u) => {
+      const tieneCompetencia = idCompReq
+        ? u.competencias.some((c) => c.id === idCompReq)
+        : true;
+
+      const tieneAusencia = u.ausencias.some(
+        (a) =>
+          a.estado === 'Aprobada' &&
+          fecha >= a.fechaInicio &&
+          fecha <= a.fechaFin,
+      );
+
+      return tieneCompetencia && !tieneAusencia;
+    });
+
+    if (usuariosAptos.length === 0) return [];
 
     const citasDelDia = await this.citaRepository
       .createQueryBuilder('cita')
@@ -216,12 +244,15 @@ export class CitasService {
       .andWhere('DATE(cita.fechaHora) = :fecha', { fecha })
       .getMany();
 
+    const start = new Date(`${fecha}T${horario.horaApertura}`);
+    const end = new Date(`${fecha}T${horario.horaCierre}`);
     const slots: string[] = [];
     let current = start;
 
     while (current < end) {
-      const horaStr = current.toTimeString().split(' ')[0];
-      const timeMatches = citasDelDia.filter((c) => {
+      const horaStr = current.toTimeString().split(' ')[0].substring(0, 5);
+
+      const citasOcupadas = citasDelDia.filter((c) => {
         const d = new Date(c.fechaHora);
         return (
           d.getHours() === current.getHours() &&
@@ -229,9 +260,10 @@ export class CitasService {
         );
       });
 
-      if (timeMatches.length < usuarios.length) {
+      if (citasOcupadas.length < usuariosAptos.length) {
         slots.push(horaStr);
       }
+
       current = new Date(current.getTime() + duracion * 60000);
     }
 
