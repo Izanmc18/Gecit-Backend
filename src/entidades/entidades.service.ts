@@ -33,6 +33,18 @@ export class EntidadesService {
     return entidad;
   }
 
+  async findByDomain(dominio: string): Promise<Entidad> {
+    const entidad = await this.entidadRepository.findOne({
+      where: { dominio, activo: true },
+    });
+    if (!entidad) {
+      throw new NotFoundException(
+        `Entidad con dominio ${dominio} no encontrada o inactiva`,
+      );
+    }
+    return entidad;
+  }
+
   async update(
     id: string,
     updateEntidadDto: UpdateEntidadDto,

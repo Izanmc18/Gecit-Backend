@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   BadRequestException,
   Injectable,
@@ -107,7 +105,8 @@ export class CitasService {
       idCliente,
       idEntidad,
       estado,
-      fecha,
+      fechaInicio,
+      fechaFin,
     } = filterDto;
 
     const queryBuilder = this.citaRepository
@@ -118,7 +117,7 @@ export class CitasService {
       .leftJoinAndSelect('cita.tramite', 'tramite')
       .take(limit)
       .skip(offset)
-      .orderBy('cita.fechaHora', 'DESC');
+      .orderBy('cita.fechaHora', 'ASC');
 
     if (search) {
       queryBuilder.andWhere(
@@ -140,8 +139,20 @@ export class CitasService {
     if (estado) {
       queryBuilder.andWhere('cita.estado = :estado', { estado });
     }
-    if (fecha) {
-      queryBuilder.andWhere('DATE(cita.fechaHora) = :fecha', { fecha });
+    if (fechaInicio && fechaFin) {
+      const startOfDay = new Date(`${fechaInicio}T00:00:00`);
+      const endOfDay = new Date(`${fechaFin}T23:59:59`);
+      queryBuilder.andWhere('cita.fechaHora BETWEEN :start AND :end', {
+        start: startOfDay,
+        end: endOfDay,
+      });
+    } else if (fechaInicio) {
+      const startOfDay = new Date(`${fechaInicio}T00:00:00`);
+      const endOfDay = new Date(`${fechaInicio}T23:59:59`);
+      queryBuilder.andWhere('cita.fechaHora BETWEEN :start AND :end', {
+        start: startOfDay,
+        end: endOfDay,
+      });
     }
 
     const [citas, total] = await queryBuilder.getManyAndCount();
@@ -190,10 +201,9 @@ export class CitasService {
     });
     if (esFestivo) return [];
 
-    // Validar que no sea fin de semana (sábado = 6, domingo = 0)
     const diaSemana = new Date(fecha + 'T00:00:00').getDay();
     if (diaSemana === 0 || diaSemana === 6) {
-      return []; // No hay citas los fines de semana
+      return []; 
     }
 
     const entidad = await this.entidadRepository.findOne({

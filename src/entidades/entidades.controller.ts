@@ -44,6 +44,18 @@ export class EntidadesController {
     return entidades.map(EntidadAdapter.toResponse);
   }
 
+  @Get('public/:domain')
+  @Public()
+  @ApiOperation({ summary: 'Get entity public info by domain (slug)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Entity found successfully.',
+  })
+  async findByDomain(@Param('domain') domain: string) {
+    const entidad = await this.entidadesService.findByDomain(domain);
+    return EntidadAdapter.toResponse(entidad);
+  }
+
   @Get(':id')
   @Public()
   @ApiOperation({ summary: 'Get an entity by ID' })

@@ -10,6 +10,7 @@ export class CitaResponse {
   idUsuarioAsignado: string;
   idMesa: string;
   idTramite: string;
+  tramite?: any;
   fechaHora: Date;
   estado: EstadoCita;
   observaciones: string | null;
@@ -27,6 +28,7 @@ export class CitaAdapter {
       idUsuarioAsignado: cita.idUsuarioAsignado,
       idMesa: cita.idMesa,
       idTramite: cita.idTramite,
+      tramite: cita.tramite ? { nombreTramite: cita.tramite.nombreTramite } : undefined,
       fechaHora: cita.fechaHora,
       estado: cita.estado,
       observaciones: cita.observaciones || null,

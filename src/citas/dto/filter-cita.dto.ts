@@ -27,5 +27,10 @@ export class FilterCitaDto extends PaginationDto {
   @ApiPropertyOptional({ example: '2026-04-20' })
   @IsDateString()
   @IsOptional()
-  fecha?: string;
+  fechaInicio?: string;
+
+  @ApiPropertyOptional({ example: '2026-04-26' })
+  @IsDateString()
+  @IsOptional()
+  fechaFin?: string;
 }
