@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unsafe-enum-comparison */
 import {
   BadRequestException,
   Injectable,
@@ -126,9 +128,7 @@ export class CitasService {
       );
     }
     if (idUsuarioAsignado) {
-      queryBuilder.andWhere('cita.idUsuarioAsignado = :idUsuarioAsignado', {
-        idUsuarioAsignado,
-      });
+      queryBuilder.andWhere('cita.idUsuarioAsignado = :idUsuarioAsignado', { idUsuarioAsignado });
     }
     if (idCliente) {
       queryBuilder.andWhere('cita.idCliente = :idCliente', { idCliente });
@@ -140,31 +140,31 @@ export class CitasService {
       queryBuilder.andWhere('cita.estado = :estado', { estado });
     }
     if (fechaInicio && fechaFin) {
-      const startOfDay = new Date(`${fechaInicio}T00:00:00`);
-      const endOfDay = new Date(`${fechaFin}T23:59:59`);
-      queryBuilder.andWhere('cita.fechaHora BETWEEN :start AND :end', {
-        start: startOfDay,
-        end: endOfDay,
+      queryBuilder.andWhere('cita.fechaHora >= :start AND cita.fechaHora <= :end', {
+        start: `${fechaInicio} 00:00:00`,
+        end: `${fechaFin} 23:59:59`,
       });
     } else if (fechaInicio) {
-      const startOfDay = new Date(`${fechaInicio}T00:00:00`);
-      const endOfDay = new Date(`${fechaInicio}T23:59:59`);
-      queryBuilder.andWhere('cita.fechaHora BETWEEN :start AND :end', {
-        start: startOfDay,
-        end: endOfDay,
+      queryBuilder.andWhere('cita.fechaHora >= :start AND cita.fechaHora <= :end', {
+        start: `${fechaInicio} 00:00:00`,
+        end: `${fechaInicio} 23:59:59`,
       });
     }
 
-    const [citas, total] = await queryBuilder.getManyAndCount();
+    try {
+      const [citas, total] = await queryBuilder.getManyAndCount();
 
-    return {
-      data: citas,
-      meta: {
-        total,
-        limit,
-        offset,
-      },
-    };
+      return {
+        data: citas,
+        meta: {
+          total,
+          limit,
+          offset,
+        },
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
   async findOne(id: string): Promise<Cita> {
@@ -203,7 +203,7 @@ export class CitasService {
 
     const diaSemana = new Date(fecha + 'T00:00:00').getDay();
     if (diaSemana === 0 || diaSemana === 6) {
-      return []; 
+      return [];
     }
 
     const entidad = await this.entidadRepository.findOne({

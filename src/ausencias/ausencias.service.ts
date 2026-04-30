@@ -57,16 +57,21 @@ export class AusenciasService {
       queryBuilder.andWhere('ausencia.estado = :estado', { estado });
     }
 
-    const [ausencias, total] = await queryBuilder.getManyAndCount();
+    try {
+      const [ausencias, total] = await queryBuilder.getManyAndCount();
 
-    return {
-      data: ausencias,
-      meta: {
-        total,
-        limit,
-        offset,
-      },
-    };
+      return {
+        data: ausencias,
+        meta: {
+          total,
+          limit,
+          offset,
+        },
+      };
+    } catch (error) {
+      console.error('Error en AusenciasService.findAll:', error);
+      throw error;
+    }
   }
 
   async findOne(id: string): Promise<Ausencia> {

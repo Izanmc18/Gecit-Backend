@@ -8,6 +8,6 @@ export function Auth(...roles: ValidRoles[]) {
   // applyDecorators lo que hace es permitirme unir varios decoradores en uno solo
   return applyDecorators(
     RoleProtected(...roles), // Marco los roles que necesito
-    UseGuards(AuthGuard(), UserRoleGuard), // Aplico el guard de JWT y el de Roles
+    UseGuards(AuthGuard('jwt'), UserRoleGuard), // Aplico el guard de JWT y el de Roles
   );
 }

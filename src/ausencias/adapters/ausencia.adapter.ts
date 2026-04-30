@@ -7,6 +7,8 @@ import {
 export class AusenciaResponse {
   id: string;
   idUsuario: string;
+  usuarioNombre?: string;
+  usuarioEmail?: string;
   fechaSolicitud: string;
   fechaInicio: string;
   fechaFin: string;
@@ -19,6 +21,10 @@ export class AusenciaAdapter {
     return {
       id: ausencia.id,
       idUsuario: ausencia.idUsuario,
+      usuarioNombre: ausencia.usuario
+        ? `${ausencia.usuario.nombre} ${ausencia.usuario.apellidos}`
+        : undefined,
+      usuarioEmail: ausencia.usuario?.email,
       fechaSolicitud: ausencia.fechaSolicitud,
       fechaInicio: ausencia.fechaInicio,
       fechaFin: ausencia.fechaFin,
