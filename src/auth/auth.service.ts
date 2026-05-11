@@ -25,6 +25,7 @@ export class AuthService {
         'email',
         'passwordHash',
         'idRol',
+        'idEntidad',
         'fotoUrl',
       ],
     });
@@ -51,7 +52,7 @@ export class AuthService {
     const usuario = this.usuarioRepository.create({
       ...userData,
       passwordHash: bcrypt.hashSync(password, 10),
-      idRol: 'e51b3a32-3333-4a3b-9a99-b1d5c7f8a123', // Rol Cliente por defecto
+      idRol: 'e51b3a32-3333-4a3b-9a99-b1d5c7f8a123',
     });
 
     try {

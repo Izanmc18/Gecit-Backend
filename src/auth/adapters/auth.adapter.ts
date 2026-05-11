@@ -8,6 +8,7 @@ export class AuthAdapter {
       sub: usuario.id,
       email: usuario.email,
       idRol: usuario.idRol,
+      idEntidad: usuario.idEntidad,
     };
   }
 
@@ -18,6 +19,7 @@ export class AuthAdapter {
       apellidos: usuario.apellidos,
       email: usuario.email,
       idRol: usuario.idRol,
+      idEntidad: usuario.idEntidad,
       fotoUrl: usuario.fotoUrl || null,
     };
   }

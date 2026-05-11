@@ -37,7 +37,7 @@ export class Entidad {
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;
 
-  // RELACIONES INVERSAS
+ 
 
   @OneToMany(() => Usuario, (usuario) => usuario.entidad)
   usuarios: Usuario[];

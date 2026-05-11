@@ -22,7 +22,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   async validate(payload: JwtPayload): Promise<Usuario> {
     const { sub } = payload;
-    // Cargo la relación 'rol' para que el Guard pueda leer el nombre del rol
+   
     const user = await this.usuarioRepository.findOne({
       where: { id: sub },
       relations: ['rol'],

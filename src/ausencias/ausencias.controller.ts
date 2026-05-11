@@ -18,7 +18,7 @@ import {
 import { AusenciasService } from './ausencias.service';
 import { CreateAusenciaDto, UpdateAusenciaDto, FilterAusenciaDto } from './dto';
 import { AusenciaAdapter } from './adapters/ausencia.adapter';
-import { Auth } from '../auth/decorators';
+import { Auth, CurrentUser } from '../auth/decorators';
 import { ValidRoles } from '../auth/interfaces';
 
 @ApiTags('Absences')
@@ -46,9 +46,14 @@ export class AusenciasController {
     status: 201,
     description: 'Absence requests found successfully.',
   })
-  async findAll(@Query() filterAusenciaDto: FilterAusenciaDto) {
-    const { data, meta } =
-      await this.ausenciasService.findAll(filterAusenciaDto);
+  async findAll(
+    @Query() filterAusenciaDto: FilterAusenciaDto,
+    @CurrentUser('idEntidad') idEntidad: string,
+  ) {
+    const { data, meta } = await this.ausenciasService.findAll(
+      filterAusenciaDto,
+      idEntidad,
+    );
     return {
       data: AusenciaAdapter.toResponseList(data),
       meta,

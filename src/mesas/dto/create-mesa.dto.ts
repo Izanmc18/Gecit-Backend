@@ -33,7 +33,6 @@ export class CreateMesaDto {
     default: 0,
   })
   @IsNumber()
-  @Min(0)
   @IsOptional()
   posX?: number;
 
@@ -43,7 +42,6 @@ export class CreateMesaDto {
     default: 0,
   })
   @IsNumber()
-  @Min(0)
   @IsOptional()
   posY?: number;
 
@@ -55,4 +53,33 @@ export class CreateMesaDto {
   @IsNumber()
   @IsOptional()
   rotacion?: number;
+
+  @ApiPropertyOptional({
+    description: 'Ancho de la mesa',
+    example: 60,
+    default: 60,
+  })
+  @IsNumber()
+  @Min(20)
+  @IsOptional()
+  ancho?: number;
+
+  @ApiPropertyOptional({
+    description: 'Largo de la mesa',
+    example: 60,
+    default: 60,
+  })
+  @IsNumber()
+  @Min(20)
+  @IsOptional()
+  largo?: number;
+
+  @ApiPropertyOptional({
+    description: 'Estado de la mesa',
+    example: 'Libre',
+    default: 'Libre',
+  })
+  @IsString()
+  @IsOptional()
+  estado?: string;
 }

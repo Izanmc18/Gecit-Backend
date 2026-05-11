@@ -30,13 +30,12 @@ export class AusenciasService {
     return await this.ausenciaRepository.save(ausencia);
   }
 
-  async findAll(filterDto: FilterAusenciaDto) {
+  async findAll(filterDto: FilterAusenciaDto, forcedIdEntidad?: string) {
     const {
       limit = 10,
       offset = 0,
       search,
       idUsuario,
-      idEntidad,
       estado,
     } = filterDto;
 
@@ -50,9 +49,12 @@ export class AusenciasService {
     if (idUsuario) {
       queryBuilder.andWhere('ausencia.idUsuario = :idUsuario', { idUsuario });
     }
-    if (idEntidad) {
-      queryBuilder.andWhere('usuario.idEntidad = :idEntidad', { idEntidad });
+
+   
+    if (forcedIdEntidad) {
+      queryBuilder.andWhere('usuario.idEntidad = :idEntidad', { idEntidad: forcedIdEntidad });
     }
+
     if (estado) {
       queryBuilder.andWhere('ausencia.estado = :estado', { estado });
     }

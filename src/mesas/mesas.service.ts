@@ -21,8 +21,11 @@ export class MesasService {
     return await this.mesaRepository.save(mesa);
   }
 
-  async findAll(): Promise<Mesa[]> {
-    return await this.mesaRepository.find({ relations: ['sala'] });
+  async findAll(idEntidad: string): Promise<Mesa[]> {
+    return await this.mesaRepository.find({
+      where: { sala: { idEntidad } },
+      relations: ['sala'],
+    });
   }
 
   async findOne(id: string): Promise<Mesa> {
@@ -36,14 +39,20 @@ export class MesasService {
   }
 
   async update(id: string, updateMesaDto: UpdateMesaDto): Promise<Mesa> {
-    const mesa = await this.mesaRepository.preload({
-      id,
-      ...updateMesaDto,
-    });
-
+    console.log('Update service call:', { id, updateMesaDto });
+    const mesa = await this.findOne(id);
     if (!mesa) throw new NotFoundException(`Mesa con id ${id} no encontrada`);
 
-    return await this.mesaRepository.save(mesa);
+   
+    await this.mesaRepository.update(id, updateMesaDto);
+
+    const updated = await this.findOne(id);
+    console.log('Update result from DB:', {
+      id,
+      posX: updated.posX,
+      posY: updated.posY,
+    });
+    return updated;
   }
 
   async remove(id: string): Promise<void> {

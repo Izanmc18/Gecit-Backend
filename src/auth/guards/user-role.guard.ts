@@ -20,23 +20,23 @@ export class UserRoleGuard implements CanActivate {
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
-    // 1. Obtenemos los roles que definimos en el controlador mediante @RoleProtected
+   
     const validRoles: string[] = this.reflector.get(
       META_ROLES,
       context.getHandler(),
     );
 
-    // Si no definimos roles en el controlador, cualquier usuario autenticado pasa
+   
     if (!validRoles || validRoles.length === 0) return true;
 
     const req = context.switchToHttp().getRequest();
-    const user = req.user as Usuario; // El usuario lo inyecta el JwtStrategy
+    const user = req.user as Usuario;
 
     if (!user)
       throw new BadRequestException('Usuario no encontrado en la petición');
 
-    // 2. Comparamos el rol del usuario (usuario.rol.nombreRol) con los permitidos
-    // Nota: Es importante que el JwtStrategy haga el 'eager load' o join del rol
+   
+   
     if (validRoles.includes(user.rol.nombreRol)) {
       return true;
     }

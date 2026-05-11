@@ -27,6 +27,15 @@ export class Mesa {
   @Column('float', { default: 0 })
   rotacion: number;
 
+  @Column('float', { default: 60 })
+  ancho: number;
+
+  @Column('float', { default: 60 })
+  largo: number;
+
+  @Column('varchar', { length: 20, default: 'Libre' })
+  estado: string;
+
   @ManyToOne(() => Sala, (sala) => sala.mesas, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_sala' })
   sala: Sala;

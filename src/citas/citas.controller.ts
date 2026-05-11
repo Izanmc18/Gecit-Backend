@@ -24,7 +24,7 @@ import {
   ReasignarMasivoDto,
 } from './dto';
 import { CitaAdapter } from './adapters/cita.adapter';
-import { Auth } from '../auth/decorators';
+import { Auth, CurrentUser } from '../auth/decorators';
 import { Public } from '../auth/decorators/public.decorator';
 import { ValidRoles } from '../auth/interfaces';
 
@@ -56,8 +56,14 @@ export class CitasController {
     status: 201,
     description: 'Appointments found successfully.',
   })
-  async findAll(@Query() filterDto: FilterCitaDto) {
-    const { data, meta } = await this.citasService.findAll(filterDto);
+  async findAll(
+    @Query() filterDto: FilterCitaDto,
+    @CurrentUser('idEntidad') idEntidad: string,
+  ) {
+    const { data, meta } = await this.citasService.findAll(
+      filterDto,
+      idEntidad,
+    );
     return {
       data: CitaAdapter.toResponseList(data),
       meta,

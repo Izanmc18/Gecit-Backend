@@ -12,6 +12,7 @@ import {
   CheckinDto,
 } from './dto';
 import { Cita } from '../citas/entities/cita.entity';
+import { AsignacionMesa } from '../asignacion-mesas/entities/asignacion-mesa.entity';
 
 @Injectable()
 export class TurnosLlegadaService {
@@ -21,6 +22,9 @@ export class TurnosLlegadaService {
 
     @InjectRepository(Cita)
     private readonly citaRepository: Repository<Cita>,
+
+    @InjectRepository(AsignacionMesa)
+    private readonly asignacionRepository: Repository<AsignacionMesa>,
   ) {}
 
   async create(createDto: CreateTurnoLlegadaDto): Promise<TurnoLlegada> {
@@ -71,13 +75,25 @@ export class TurnosLlegadaService {
     await this.turnoRepository.remove(turno);
   }
 
-  async llamarTurno(id: string): Promise<TurnoLlegada> {
+  async llamarTurno(id: string, idUsuario: string): Promise<TurnoLlegada> {
     const turno = await this.findOne(id);
     if (turno.estado !== EstadoTurno.EN_ESPERA) {
       throw new BadRequestException(
         `El ticket ya está en estado "${turno.estado}" y no puede ser llamado`,
       );
     }
+
+   
+    const hoy = new Date().toISOString().split('T')[0];
+    const asignacion = await this.asignacionRepository.findOne({
+      where: { idUsuario, fecha: hoy }
+    });
+
+    if (asignacion && turno.idCita) {
+     
+      await this.citaRepository.update(turno.idCita, { idMesa: asignacion.idMesa });
+    }
+
     turno.estado = EstadoTurno.LLAMADO;
     turno.fechaLlamada = new Date();
     return await this.turnoRepository.save(turno);
@@ -91,12 +107,24 @@ export class TurnosLlegadaService {
       );
     }
     turno.estado = EstadoTurno.ATENDIDO;
+    
+   
+    if (turno.idCita) {
+      await this.citaRepository.update(turno.idCita, { estado: 'Realizada' as any });
+    }
+    
     return await this.turnoRepository.save(turno);
   }
 
   async descartarTurno(id: string): Promise<TurnoLlegada> {
     const turno = await this.findOne(id);
     turno.estado = EstadoTurno.DESCARTADO;
+    
+   
+    if (turno.idCita) {
+      await this.citaRepository.update(turno.idCita, { estado: 'No presentado' as any });
+    }
+    
     return await this.turnoRepository.save(turno);
   }
 

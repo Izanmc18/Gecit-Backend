@@ -17,7 +17,7 @@ import {
 import { SalasService } from './salas.service';
 import { CreateSalaDto, UpdateSalaDto } from './dto';
 import { SalaAdapter } from './adapters/sala.adapter';
-import { Auth } from '../auth/decorators';
+import { Auth, CurrentUser } from '../auth/decorators';
 import { ValidRoles } from '../auth/interfaces';
 
 @ApiTags('Rooms')
@@ -42,8 +42,8 @@ export class SalasController {
     status: 201,
     description: 'Rooms found successfully.',
   })
-  async findAll() {
-    const salas = await this.salasService.findAll();
+  async findAll(@CurrentUser('idEntidad') idEntidad: string) {
+    const salas = await this.salasService.findAll(idEntidad);
     return SalaAdapter.toResponseList(salas);
   }
 

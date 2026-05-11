@@ -15,6 +15,8 @@ import { CreateEntidadDto, UpdateEntidadDto } from './dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { EntidadAdapter } from './adapters/entidad.adapter';
 import { Public } from '../auth/decorators/public.decorator';
+import { Auth } from '../auth/decorators';
+import { ValidRoles } from '../auth/interfaces';
 
 @ApiTags('Entities (Multitenant)')
 @Controller('entities')
@@ -22,6 +24,7 @@ export class EntidadesController {
   constructor(private readonly entidadesService: EntidadesService) {}
 
   @Post()
+  @Auth(ValidRoles.superadmin)
   @ApiOperation({ summary: 'Create a new entity (Tenant)' })
   @ApiResponse({
     status: 201,
@@ -69,6 +72,7 @@ export class EntidadesController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.superadmin)
   @ApiOperation({ summary: 'Update an entity' })
   @ApiResponse({
     status: 200,
@@ -83,6 +87,7 @@ export class EntidadesController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.superadmin)
   @ApiOperation({ summary: 'Delete an entity' })
   @ApiResponse({
     status: 200,

@@ -21,8 +21,11 @@ export class SalasService {
     return await this.salaRepository.save(sala);
   }
 
-  async findAll(): Promise<Sala[]> {
-    return await this.salaRepository.find({ relations: ['oficina'] });
+  async findAll(idEntidad: string): Promise<Sala[]> {
+    return await this.salaRepository.find({
+      where: { idEntidad },
+      relations: ['entidad'],
+    });
   }
 
   async findOne(id: string): Promise<Sala> {

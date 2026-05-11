@@ -98,14 +98,13 @@ export class CitasService {
     return await this.citaRepository.save(cita);
   }
 
-  async findAll(filterDto: FilterCitaDto) {
+  async findAll(filterDto: FilterCitaDto, forcedIdEntidad?: string) {
     const {
       limit = 10,
       offset = 0,
       search,
       idUsuarioAsignado,
       idCliente,
-      idEntidad,
       estado,
       fechaInicio,
       fechaFin,
@@ -133,9 +132,12 @@ export class CitasService {
     if (idCliente) {
       queryBuilder.andWhere('cita.idCliente = :idCliente', { idCliente });
     }
-    if (idEntidad) {
-      queryBuilder.andWhere('sala.idEntidad = :idEntidad', { idEntidad });
+
+   
+    if (forcedIdEntidad) {
+      queryBuilder.andWhere('sala.idEntidad = :idEntidad', { idEntidad: forcedIdEntidad });
     }
+
     if (estado) {
       queryBuilder.andWhere('cita.estado = :estado', { estado });
     }

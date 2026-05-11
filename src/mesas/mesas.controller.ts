@@ -17,7 +17,7 @@ import {
 import { MesasService } from './mesas.service';
 import { CreateMesaDto, UpdateMesaDto } from './dto';
 import { MesaAdapter } from './adapters/mesa.adapter';
-import { Auth } from '../auth/decorators';
+import { Auth, CurrentUser } from '../auth/decorators';
 import { ValidRoles } from '../auth/interfaces';
 
 @ApiTags('Tables')
@@ -42,8 +42,8 @@ export class MesasController {
     status: 201,
     description: 'Tables found successfully.',
   })
-  async findAll() {
-    const mesas = await this.mesasService.findAll();
+  async findAll(@CurrentUser('idEntidad') idEntidad: string) {
+    const mesas = await this.mesasService.findAll(idEntidad);
     return MesaAdapter.toResponseList(mesas);
   }
 

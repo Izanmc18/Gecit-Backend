@@ -25,9 +25,10 @@ import {
   CheckinDto,
 } from './dto';
 import { TurnoLlegadaAdapter } from './adapters/turno-llegada.adapter';
-import { Auth } from '../auth/decorators';
+import { Auth, CurrentUser } from '../auth/decorators';
 import { Public } from '../auth/decorators/public.decorator';
 import { ValidRoles } from '../auth/interfaces';
+import { Usuario } from '../usuarios/entities/usuario.entity';
 
 @ApiTags('Tickets (Turnos de Llegada)')
 @ApiBearerAuth()
@@ -134,8 +135,11 @@ export class TurnosLlegadaController {
     status: 200,
     description: 'Ticket called successfully.',
   })
-  async llamarTurno(@Param('id', ParseUUIDPipe) id: string) {
-    const turno = await this.turnosLlegadaService.llamarTurno(id);
+  async llamarTurno(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: Usuario,
+  ) {
+    const turno = await this.turnosLlegadaService.llamarTurno(id, user.id);
     return TurnoLlegadaAdapter.toResponse(turno);
   }
 

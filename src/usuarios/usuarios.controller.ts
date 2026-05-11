@@ -15,6 +15,8 @@ import { CreateUsuarioDto, UpdateUsuarioDto } from './dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { UsuarioAdapter } from './adapters/usuario.adapter';
 import { Public } from '../auth/decorators/public.decorator';
+import { Auth } from '../auth/decorators';
+import { ValidRoles } from '../auth/interfaces';
 
 @ApiTags('Users')
 @Controller('users')
@@ -22,6 +24,7 @@ export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
   @Post()
+  @Auth(ValidRoles.superadmin, ValidRoles.admin)
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'User created successfully.' })
   @ApiResponse({ status: 400, description: 'Bad request.' })
@@ -50,6 +53,7 @@ export class UsuariosController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.superadmin, ValidRoles.admin)
   @ApiOperation({ summary: 'Update a user' })
   @ApiResponse({ status: 200, description: 'User updated successfully.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
@@ -62,6 +66,7 @@ export class UsuariosController {
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.superadmin, ValidRoles.admin)
   @ApiOperation({ summary: 'Delete a user' })
   @ApiResponse({ status: 200, description: 'User deleted successfully.' })
   @ApiResponse({ status: 404, description: 'User not found.' })

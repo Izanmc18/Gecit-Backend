@@ -8,7 +8,9 @@ export class CitaResponse {
   clienteEmail: string | null;
   clienteTelefono: string | null;
   idUsuarioAsignado: string;
+  usuarioAsignado?: any;
   idMesa: string;
+  mesa?: any;
   idTramite: string;
   tramite?: any;
   fechaHora: Date;
@@ -26,9 +28,15 @@ export class CitaAdapter {
       clienteEmail: cita.clienteEmail || null,
       clienteTelefono: cita.clienteTelefono || null,
       idUsuarioAsignado: cita.idUsuarioAsignado,
+      usuarioAsignado: cita.usuarioAsignado
+        ? { nombre: cita.usuarioAsignado.nombre }
+        : undefined,
       idMesa: cita.idMesa,
+      mesa: cita.mesa ? { nombreMesa: cita.mesa.nombreMesa } : undefined,
       idTramite: cita.idTramite,
-      tramite: cita.tramite ? { nombreTramite: cita.tramite.nombreTramite } : undefined,
+      tramite: cita.tramite
+        ? { nombreTramite: cita.tramite.nombreTramite }
+        : undefined,
       fechaHora: cita.fechaHora,
       estado: cita.estado,
       observaciones: cita.observaciones || null,

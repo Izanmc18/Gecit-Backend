@@ -7,6 +7,9 @@ export class MesaResponse {
   posX: number;
   posY: number;
   rotacion: number;
+  ancho: number;
+  largo: number;
+  estado: string;
 }
 
 export class MesaAdapter {
@@ -18,6 +21,9 @@ export class MesaAdapter {
       posX: mesa.posX,
       posY: mesa.posY,
       rotacion: mesa.rotacion,
+      ancho: mesa.ancho,
+      largo: mesa.largo,
+      estado: mesa.estado,
     };
   }
 
