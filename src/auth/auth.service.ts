@@ -27,6 +27,9 @@ export class AuthService {
         'idRol',
         'idEntidad',
         'fotoUrl',
+        'debeCambiarPassword',
+        'dni',
+        'telefono',
       ],
     });
 
@@ -43,7 +46,17 @@ export class AuthService {
     return {
       token: this.jwtService.sign(payload),
       user: AuthAdapter.toLoginUserDto(usuario),
+      requirePasswordChange: !!usuario.debeCambiarPassword,
     };
+  }
+
+  async changeFirstPassword(userId: string, newPassword: string): Promise<void> {
+    const usuario = await this.usuarioRepository.findOne({ where: { id: userId } });
+    if (!usuario) throw new UnauthorizedException('Usuario no encontrado');
+
+    usuario.passwordHash = bcrypt.hashSync(newPassword, 10);
+    usuario.debeCambiarPassword = false;
+    await this.usuarioRepository.save(usuario);
   }
 
   async register(registerDto: RegisterDto): Promise<LoginResponseDto> {

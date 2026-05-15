@@ -10,6 +10,8 @@ import { Horario } from '../horarios/entities/horario.entity';
 import { Ausencia } from '../ausencias/entities/ausencia.entity';
 import { Usuario } from '../usuarios/entities/usuario.entity';
 import { Tramite } from '../tramites/entities/tramite.entity';
+import { Sala } from '../salas/entities/sala.entity';
+import { AsignacionMesa } from '../asignacion-mesas/entities/asignacion-mesa.entity';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { Tramite } from '../tramites/entities/tramite.entity';
       Ausencia,
       Usuario,
       Tramite,
+      Sala,
+      AsignacionMesa,
     ]),
   ],
   controllers: [CitasController],

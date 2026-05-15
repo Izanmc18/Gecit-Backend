@@ -21,6 +21,8 @@ export class AuthAdapter {
       idRol: usuario.idRol,
       idEntidad: usuario.idEntidad,
       fotoUrl: usuario.fotoUrl || null,
+      dni: usuario.dni,
+      telefono: usuario.telefono,
     };
   }
 }

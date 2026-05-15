@@ -33,4 +33,8 @@ export class FilterCitaDto extends PaginationDto {
   @IsDateString()
   @IsOptional()
   fechaFin?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  includeUnassigned?: string; // Usamos string porque llega por query param ('true' o 'false')
 }

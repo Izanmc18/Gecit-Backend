@@ -11,6 +11,7 @@ import { Mesa } from '../../mesas/entities/mesa.entity';
 import { Tramite } from '../../tramites/entities/tramite.entity';
 import { Entidad } from '../../entidades/entities/entidad.entity';
 import { TurnoLlegada } from '../../turnos-llegada/entities/turno-llegada.entity';
+import { Sala } from '../../salas/entities/sala.entity';
 
 export enum EstadoCita {
   PENDIENTE = 'Pendiente',
@@ -68,19 +69,26 @@ export class Cita {
   @Column({ name: 'id_cliente', nullable: true })
   idCliente: string;
 
-  @ManyToOne(() => Usuario, (usuario) => usuario.citasAsignadas)
+  @ManyToOne(() => Usuario, (usuario) => usuario.citasAsignadas, { nullable: true })
   @JoinColumn({ name: 'id_usuario_asignado' })
   usuarioAsignado: Usuario;
 
-  @Column({ name: 'id_usuario_asignado' })
+  @Column({ name: 'id_usuario_asignado', nullable: true })
   idUsuarioAsignado: string;
 
-  @ManyToOne(() => Mesa)
+  @ManyToOne(() => Mesa, { nullable: true })
   @JoinColumn({ name: 'id_mesa' })
   mesa: Mesa;
 
-  @Column({ name: 'id_mesa' })
+  @Column({ name: 'id_mesa', nullable: true })
   idMesa: string;
+
+  @ManyToOne(() => Sala, { nullable: true })
+  @JoinColumn({ name: 'id_sala' })
+  sala: Sala;
+
+  @Column({ name: 'id_sala', nullable: true })
+  idSala: string;
 
   @ManyToOne(() => Tramite)
   @JoinColumn({ name: 'id_tramite' })

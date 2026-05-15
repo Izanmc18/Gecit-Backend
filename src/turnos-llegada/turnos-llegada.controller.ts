@@ -10,7 +10,10 @@ import {
   HttpCode,
   HttpStatus,
   Query,
+  Sse,
+  MessageEvent,
 } from '@nestjs/common';
+import { Observable, filter } from 'rxjs';
 import {
   ApiTags,
   ApiOperation,
@@ -45,6 +48,18 @@ export class TurnosLlegadaController {
     return this.turnosLlegadaService.handleCheckin(checkinDto);
   }
 
+  @Sse('events/:idEntidadOrSlug')
+  @Public()
+  @ApiOperation({ summary: 'Stream de eventos en tiempo real para una entidad' })
+  events(@Param('idEntidadOrSlug') idEntidadOrSlug: string): Observable<MessageEvent> {
+    return this.turnosLlegadaService.getEventsObservable().pipe(
+      filter((event: any) => 
+        event.data.idEntidad === idEntidadOrSlug || 
+        event.data.slugEntidad === idEntidadOrSlug
+      ),
+    );
+  }
+
   @Post()
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Generar un nuevo ticket de turno manual' })
@@ -59,13 +74,17 @@ export class TurnosLlegadaController {
   @ApiOperation({
     summary: 'Vista optimizada de pantallas para TV en sala de espera',
   })
-  @ApiQuery({ name: 'idEntidad', required: true })
+  @ApiQuery({ name: 'idEntidad', required: false })
+  @ApiQuery({ name: 'slug', required: false })
   @ApiResponse({
     status: 200,
     description: 'view optimized for screens in waiting room',
   })
-  async getDisplay(@Query('idEntidad') idEntidad: string) {
-    return this.turnosLlegadaService.getDisplayData(idEntidad);
+  async getDisplay(
+    @Query('idEntidad') idEntidad?: string,
+    @Query('slug') slug?: string,
+  ) {
+    return this.turnosLlegadaService.getDisplayData(idEntidad, slug);
   }
 
   @Get()

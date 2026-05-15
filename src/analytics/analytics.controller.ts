@@ -7,6 +7,7 @@ import {
 } from '@nestjs/swagger';
 import { AnalyticsService } from './analytics.service';
 import { Auth } from '../auth/decorators';
+import { Public } from '../auth/decorators/public.decorator';
 import { ValidRoles } from '../auth/interfaces';
 
 @ApiTags('Analytics')
@@ -16,7 +17,7 @@ export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
   @Get('global')
-  @Auth(ValidRoles.superadmin)
+  @Public()
   @ApiOperation({ summary: 'Métricas globales del sistema (SuperAdmin)' })
   @ApiResponse({
     status: 200,

@@ -37,8 +37,6 @@ export class Entidad {
   @CreateDateColumn({ name: 'fecha_creacion' })
   fechaCreacion: Date;
 
- 
-
   @OneToMany(() => Usuario, (usuario) => usuario.entidad)
   usuarios: Usuario[];
 

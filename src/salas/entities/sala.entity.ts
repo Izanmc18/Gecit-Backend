@@ -26,6 +26,9 @@ export class Sala {
   @Column('varchar', { name: 'color_fondo', length: 20, default: '#FFFFFF' })
   colorFondo: string;
 
+  @Column('varchar', { name: 'url_plano', length: 255, nullable: true })
+  urlPlano: string;
+
   @ManyToOne(() => Entidad, (entidad) => entidad.salas, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'id_entidad' })
   entidad: Entidad;

@@ -1,8 +1,8 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, Patch } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { LoginDto, LoginResponseDto, RegisterDto } from './dto';
-import { Public } from './decorators';
+import { LoginDto, LoginResponseDto, RegisterDto, ChangePasswordDto } from './dto';
+import { Public, Auth, CurrentUser } from './decorators';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -27,5 +27,19 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Bad request.' })
   register(@Body() registerDto: RegisterDto): Promise<LoginResponseDto> {
     return this.authService.register(registerDto);
+  }
+
+  @Patch('change-first-password')
+  @Auth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Change password for the first time' })
+  @ApiResponse({ status: 200, description: 'Password changed successfully.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  async changeFirstPassword(
+    @CurrentUser('id') userId: string,
+    @Body() changePasswordDto: ChangePasswordDto,
+  ) {
+    await this.authService.changeFirstPassword(userId, changePasswordDto.newPassword);
+    return { message: 'Password changed successfully' };
   }
 }

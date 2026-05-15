@@ -18,13 +18,21 @@ import { SalasService } from './salas.service';
 import { CreateSalaDto, UpdateSalaDto } from './dto';
 import { SalaAdapter } from './adapters/sala.adapter';
 import { Auth, CurrentUser } from '../auth/decorators';
+import { Public } from '../auth/decorators/public.decorator';
 import { ValidRoles } from '../auth/interfaces';
 
 @ApiTags('Rooms')
 @ApiBearerAuth()
-@Controller('rooms')
+@Controller('salas')
 export class SalasController {
   constructor(private readonly salasService: SalasService) {}
+
+  @Public()
+  @Get('public/:idEntidad')
+  async findAllPublic(@Param('idEntidad', ParseUUIDPipe) idEntidad: string) {
+    const salas = await this.salasService.findAll(idEntidad);
+    return SalaAdapter.toResponseList(salas);
+  }
 
   @Post()
   @Auth(ValidRoles.admin)

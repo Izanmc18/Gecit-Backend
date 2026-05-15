@@ -27,8 +27,8 @@ export class RolesController {
   constructor(private readonly rolesService: RolesService) {}
 
   @Post()
-  @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Create a new role (Admin only)' })
+  @Auth(ValidRoles.superadmin, ValidRoles.admin)
+  @ApiOperation({ summary: 'Create a new role' })
   @ApiResponse({ status: 201, description: 'Role created successfully.' })
   @ApiResponse({ status: 403, description: 'Forbidden.' })
   async create(@Body() createRolDto: CreateRolDto) {
@@ -37,8 +37,8 @@ export class RolesController {
   }
 
   @Get()
-  @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Get all roles (Admin only)' })
+  @Auth(ValidRoles.superadmin, ValidRoles.admin)
+  @ApiOperation({ summary: 'Get all roles' })
   @ApiResponse({ status: 200, description: 'List of roles' })
   async findAll() {
     const roles = await this.rolesService.findAll();
@@ -46,24 +46,18 @@ export class RolesController {
   }
 
   @Get(':id')
-  @Auth(ValidRoles.admin)
+  @Auth(ValidRoles.superadmin, ValidRoles.admin)
   @ApiOperation({ summary: 'Get a role by ID' })
-  @ApiResponse({
-    status: 201,
-    description: 'Role found successfully.',
-  })
+  @ApiResponse({ status: 200, description: 'Role found successfully.' })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const rol = await this.rolesService.findOne(id);
     return RolAdapter.toResponse(rol);
   }
 
   @Patch(':id')
-  @Auth(ValidRoles.admin)
+  @Auth(ValidRoles.superadmin, ValidRoles.admin)
   @ApiOperation({ summary: 'Update a role' })
-  @ApiResponse({
-    status: 201,
-    description: 'Role updated successfully.',
-  })
+  @ApiResponse({ status: 200, description: 'Role updated successfully.' })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateRolDto: UpdateRolDto,
@@ -73,12 +67,9 @@ export class RolesController {
   }
 
   @Delete(':id')
-  @Auth(ValidRoles.admin)
+  @Auth(ValidRoles.superadmin, ValidRoles.admin)
   @ApiOperation({ summary: 'Delete a role' })
-  @ApiResponse({
-    status: 201,
-    description: 'Role deleted successfully.',
-  })
+  @ApiResponse({ status: 200, description: 'Role deleted successfully.' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.rolesService.remove(id);
   }

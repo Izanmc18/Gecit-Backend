@@ -1,5 +1,5 @@
-import { IsDateString, IsNotEmpty, IsUUID } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsDateString, IsNotEmpty, IsUUID, IsOptional } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class SlotsFilterDto {
   @ApiProperty()
@@ -16,4 +16,9 @@ export class SlotsFilterDto {
   @IsDateString()
   @IsNotEmpty()
   fecha: string;
+
+  @ApiPropertyOptional()
+  @IsUUID()
+  @IsOptional()
+  idSala?: string;
 }

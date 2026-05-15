@@ -51,4 +51,12 @@ export class CreateUsuarioDto {
   @IsString()
   @IsOptional()
   fotoUrl?: string;
+
+  @IsOptional()
+  debeCambiarPassword?: boolean;
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsUUID('all', { each: true })
+  @IsOptional()
+  competenciasIds?: string[];
 }

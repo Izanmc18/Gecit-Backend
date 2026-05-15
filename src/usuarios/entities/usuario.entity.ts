@@ -43,6 +43,9 @@ export class Usuario {
   @Column('boolean', { default: true })
   activo: boolean;
 
+  @Column('boolean', { name: 'debe_cambiar_password', default: false })
+  debeCambiarPassword: boolean;
+
   @ManyToOne(() => Entidad, (entidad) => entidad.usuarios, {
     nullable: true,
     onDelete: 'CASCADE',

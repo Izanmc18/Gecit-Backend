@@ -2,7 +2,9 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  MessageEvent,
 } from '@nestjs/common';
+import { Subject } from 'rxjs';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TurnoLlegada, EstadoTurno } from './entities/turno-llegada.entity';
@@ -13,6 +15,9 @@ import {
 } from './dto';
 import { Cita } from '../citas/entities/cita.entity';
 import { AsignacionMesa } from '../asignacion-mesas/entities/asignacion-mesa.entity';
+
+import { Entidad } from '../entidades/entities/entidad.entity';
+import { EntidadesService } from '../entidades/entidades.service';
 
 @Injectable()
 export class TurnosLlegadaService {
@@ -25,7 +30,26 @@ export class TurnosLlegadaService {
 
     @InjectRepository(AsignacionMesa)
     private readonly asignacionRepository: Repository<AsignacionMesa>,
+
+    @InjectRepository(Entidad)
+    private readonly entidadRepository: Repository<Entidad>,
   ) {}
+
+  private readonly eventsSubject = new Subject<MessageEvent>();
+
+  getEventsObservable() {
+    return this.eventsSubject.asObservable();
+  }
+
+  private async emitUpdate(idEntidad: string, type: string) {
+
+    const entidad = await this.entidadRepository.findOne({ where: { id: idEntidad } });
+    const slugEntidad = entidad?.dominio || idEntidad;
+
+    this.eventsSubject.next({
+      data: { idEntidad, slugEntidad, type, timestamp: new Date().toISOString() },
+    } as MessageEvent);
+  }
 
   async create(createDto: CreateTurnoLlegadaDto): Promise<TurnoLlegada> {
     const ticketCode =
@@ -33,7 +57,9 @@ export class TurnosLlegadaService {
       Math.random().toString(36).substring(2, 6).toUpperCase();
     const dtoToCreate = { ...createDto, codigoTicket: ticketCode };
     const turno = this.turnoRepository.create(dtoToCreate);
-    return await this.turnoRepository.save(turno);
+    const saved = await this.turnoRepository.save(turno);
+    this.emitUpdate(saved.idEntidad, 'create');
+    return saved;
   }
 
   async findAll(): Promise<TurnoLlegada[]> {
@@ -83,7 +109,6 @@ export class TurnosLlegadaService {
       );
     }
 
-   
     const hoy = new Date().toISOString().split('T')[0];
     const asignacion = await this.asignacionRepository.findOne({
       where: { idUsuario, fecha: hoy }
@@ -91,12 +116,20 @@ export class TurnosLlegadaService {
 
     if (asignacion && turno.idCita) {
      
-      await this.citaRepository.update(turno.idCita, { idMesa: asignacion.idMesa });
+      await this.citaRepository.update(turno.idCita, { 
+        idMesa: asignacion.idMesa,
+        idUsuarioAsignado: idUsuario
+      });
+    } else if (turno.idCita) {
+
+      await this.citaRepository.update(turno.idCita, { idUsuarioAsignado: idUsuario });
     }
 
     turno.estado = EstadoTurno.LLAMADO;
     turno.fechaLlamada = new Date();
-    return await this.turnoRepository.save(turno);
+    const saved = await this.turnoRepository.save(turno);
+    this.emitUpdate(saved.idEntidad, 'call');
+    return saved;
   }
 
   async atenderTurno(id: string): Promise<TurnoLlegada> {
@@ -107,25 +140,27 @@ export class TurnosLlegadaService {
       );
     }
     turno.estado = EstadoTurno.ATENDIDO;
-    
-   
+
     if (turno.idCita) {
       await this.citaRepository.update(turno.idCita, { estado: 'Realizada' as any });
     }
     
-    return await this.turnoRepository.save(turno);
+    const saved = await this.turnoRepository.save(turno);
+    this.emitUpdate(saved.idEntidad, 'attend');
+    return saved;
   }
 
   async descartarTurno(id: string): Promise<TurnoLlegada> {
     const turno = await this.findOne(id);
     turno.estado = EstadoTurno.DESCARTADO;
-    
-   
+
     if (turno.idCita) {
       await this.citaRepository.update(turno.idCita, { estado: 'No presentado' as any });
     }
     
-    return await this.turnoRepository.save(turno);
+    const saved = await this.turnoRepository.save(turno);
+    this.emitUpdate(saved.idEntidad, 'discard');
+    return saved;
   }
 
   async handleCheckin(checkinDto: CheckinDto) {
@@ -173,10 +208,20 @@ export class TurnosLlegadaService {
     });
 
     await this.turnoRepository.save(turno);
+    this.emitUpdate(checkinDto.idEntidad, 'checkin');
     return { ticket: ticketCode, idCita: cita.id };
   }
 
-  async getDisplayData(idEntidad: string) {
+  async getDisplayData(idEntidad?: string, slug?: string) {
+    let targetId = idEntidad;
+    if (!targetId && slug) {
+      const entidad = await this.entidadRepository.findOne({ where: { dominio: slug } });
+      if (!entidad) throw new NotFoundException(`Entidad con slug ${slug} no encontrada`);
+      targetId = entidad.id;
+    }
+
+    if (!targetId) throw new BadRequestException('Debe proporcionar idEntidad o slug');
+
     const hoy = new Date().toISOString().split('T')[0];
 
     const llamados = await this.turnoRepository
@@ -184,7 +229,7 @@ export class TurnosLlegadaService {
       .leftJoinAndSelect('turno.cita', 'cita')
       .leftJoinAndSelect('cita.mesa', 'mesa')
       .leftJoinAndSelect('mesa.sala', 'sala')
-      .where('turno.idEntidad = :idEntidad', { idEntidad })
+      .where('turno.idEntidad = :targetId', { targetId })
       .andWhere('turno.estado = :estado', { estado: EstadoTurno.LLAMADO })
       .andWhere('DATE(turno.fechaGeneracion) = :hoy', { hoy })
       .orderBy('turno.fechaLlamada', 'DESC')
@@ -192,7 +237,7 @@ export class TurnosLlegadaService {
 
     const enEspera = await this.turnoRepository
       .createQueryBuilder('turno')
-      .where('turno.idEntidad = :idEntidad', { idEntidad })
+      .where('turno.idEntidad = :targetId', { targetId })
       .andWhere('turno.estado = :estado', { estado: EstadoTurno.EN_ESPERA })
       .andWhere('DATE(turno.fechaGeneracion) = :hoy', { hoy })
       .orderBy('turno.fechaGeneracion', 'ASC')

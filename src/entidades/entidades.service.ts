@@ -4,17 +4,43 @@ import { Repository } from 'typeorm';
 import { CreateEntidadDto, UpdateEntidadDto } from './dto';
 import { Entidad } from './entities/entidad.entity';
 import { PaginationDto } from '../common/dto/pagination.dto';
+import { Tramite } from '../tramites/entities/tramite.entity';
+import { Competencia } from '../competencias/entities/competencia.entity';
 
 @Injectable()
 export class EntidadesService {
   constructor(
     @InjectRepository(Entidad)
     private readonly entidadRepository: Repository<Entidad>,
+    @InjectRepository(Tramite)
+    private readonly tramiteRepository: Repository<Tramite>,
+    @InjectRepository(Competencia)
+    private readonly competenciaRepository: Repository<Competencia>,
   ) {}
 
   async create(createEntidadDto: CreateEntidadDto): Promise<Entidad> {
-    const entidad = this.entidadRepository.create(createEntidadDto);
-    return await this.entidadRepository.save(entidad);
+    const { tramites, ...entidadData } = createEntidadDto;
+    const entidad = this.entidadRepository.create(entidadData);
+    const savedEntidad = await this.entidadRepository.save(entidad);
+
+    if (tramites && tramites.length > 0) {
+      for (const nombreTramite of tramites) {
+        if (!nombreTramite.trim()) continue;
+        const competencia = this.competenciaRepository.create({
+          nombreCompetencia: nombreTramite.trim(),
+          idEntidad: savedEntidad.id,
+        });
+        const savedCompetencia = await this.competenciaRepository.save(competencia);
+        const tramite = this.tramiteRepository.create({
+          nombreTramite: nombreTramite.trim(),
+          idEntidad: savedEntidad.id,
+          idCompetenciaRequerida: savedCompetencia.id,
+        });
+        await this.tramiteRepository.save(tramite);
+      }
+    }
+
+    return savedEntidad;
   }
 
   async findAll(paginationDto: PaginationDto): Promise<Entidad[]> {
@@ -49,9 +75,10 @@ export class EntidadesService {
     id: string,
     updateEntidadDto: UpdateEntidadDto,
   ): Promise<Entidad> {
+    const { tramites, ...entidadData } = updateEntidadDto;
     const entidad = await this.entidadRepository.preload({
       id,
-      ...updateEntidadDto,
+      ...entidadData,
     });
     if (!entidad) {
       throw new NotFoundException(`Entidad con id ${id} no encontrada`);

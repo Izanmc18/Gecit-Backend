@@ -26,7 +26,6 @@ export class UserRoleGuard implements CanActivate {
       context.getHandler(),
     );
 
-   
     if (!validRoles || validRoles.length === 0) return true;
 
     const req = context.switchToHttp().getRequest();
@@ -35,8 +34,6 @@ export class UserRoleGuard implements CanActivate {
     if (!user)
       throw new BadRequestException('Usuario no encontrado en la petición');
 
-   
-   
     if (validRoles.includes(user.rol.nombreRol)) {
       return true;
     }

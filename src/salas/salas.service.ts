@@ -31,7 +31,7 @@ export class SalasService {
   async findOne(id: string): Promise<Sala> {
     const sala = await this.salaRepository.findOne({
       where: { id },
-      relations: ['oficina'],
+      relations: ['entidad'],
     });
 
     if (!sala) throw new NotFoundException(`Sala con id ${id} no encontrada`);
@@ -51,16 +51,7 @@ export class SalasService {
 
   async remove(id: string): Promise<void> {
     const sala = await this.findOne(id);
-
-    try {
-      await this.salaRepository.remove(sala);
-    } catch (error: any) {
-      if (error.code === 'ER_ROW_IS_REFERENCED_2') {
-        throw new BadRequestException(
-          'No se puede eliminar esta sala porque tiene mesas vinculadas a ella. Elimina o mueve las mesas primero.',
-        );
-      }
-      throw error;
-    }
+    await this.salaRepository.remove(sala);
   }
 }
+

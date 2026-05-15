@@ -15,6 +15,7 @@ import {
   ReasignarMasivoDto,
 } from './dto';
 import { Tramite } from 'src/tramites/entities/tramite.entity';
+import { Sala } from 'src/salas/entities/sala.entity';
 import { Cita, EstadoCita } from './entities/cita.entity';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
 import { Mesa } from 'src/mesas/entities/mesa.entity';
@@ -23,6 +24,8 @@ import { Entidad } from 'src/entidades/entities/entidad.entity';
 import { Horario } from 'src/horarios/entities/horario.entity';
 import { Ausencia } from 'src/ausencias/entities/ausencia.entity';
 import { Usuario } from 'src/usuarios/entities/usuario.entity';
+
+import { AsignacionMesa } from 'src/asignacion-mesas/entities/asignacion-mesa.entity';
 
 @Injectable()
 export class CitasService {
@@ -50,21 +53,34 @@ export class CitasService {
 
     @InjectRepository(Tramite)
     private readonly tramiteRepository: Repository<Tramite>,
+
+    @InjectRepository(Sala)
+    private readonly salaRepository: Repository<Sala>,
+
+    @InjectRepository(AsignacionMesa)
+    private readonly asignacionMesaRepository: Repository<AsignacionMesa>,
   ) {}
 
   async create(createCitaDto: CreateCitaDto): Promise<Cita> {
-    const mesa = await this.mesaRepository.findOne({
-      where: { id: createCitaDto.idMesa },
-      relations: ['sala'],
-    });
+    let idEntidad: string;
 
-    if (!mesa) {
-      throw new NotFoundException(
-        `Mesa con id ${createCitaDto.idMesa} no encontrada`,
-      );
+    if (createCitaDto.idMesa) {
+      const mesa = await this.mesaRepository.findOne({
+        where: { id: createCitaDto.idMesa },
+        relations: ['sala'],
+      });
+      if (!mesa) throw new NotFoundException(`Mesa con id ${createCitaDto.idMesa} no encontrada`);
+      idEntidad = mesa.sala.idEntidad;
+    } else if (createCitaDto.idSala) {
+      const sala = await this.salaRepository.findOne({
+        where: { id: createCitaDto.idSala }
+      });
+      if (!sala) throw new NotFoundException(`Sala con id ${createCitaDto.idSala} no encontrada`);
+      idEntidad = sala.idEntidad;
+    } else {
+      throw new BadRequestException('Debe proporcionar idMesa o idSala para crear la cita');
     }
 
-    const idEntidad = mesa.sala.idEntidad;
     const fechaCita = new Date(createCitaDto.fechaHora);
     const fechaCitaString = fechaCita.toISOString().split('T')[0];
 
@@ -81,20 +97,25 @@ export class CitasService {
       );
     }
 
-    const citaOcupada = await this.citaRepository.findOne({
-      where: {
-        idMesa: createCitaDto.idMesa,
-        fechaHora: fechaCita,
-      },
-    });
+    if (createCitaDto.idMesa) {
+      const citaOcupada = await this.citaRepository.findOne({
+        where: {
+          idMesa: createCitaDto.idMesa,
+          fechaHora: fechaCita,
+        },
+      });
 
-    if (citaOcupada) {
-      throw new BadRequestException(
-        'Esta mesa ya tiene una cita reservada para esa hora exacta.',
-      );
+      if (citaOcupada) {
+        throw new BadRequestException(
+          'Esta mesa ya tiene una cita reservada para esa hora exacta.',
+        );
+      }
     }
 
-    const cita = this.citaRepository.create(createCitaDto);
+    const cita = this.citaRepository.create({
+      ...createCitaDto,
+      idEntidad,
+    });
     return await this.citaRepository.save(cita);
   }
 
@@ -115,7 +136,9 @@ export class CitasService {
       .leftJoinAndSelect('cita.usuarioAsignado', 'usuarioAsignado')
       .leftJoinAndSelect('cita.mesa', 'mesa')
       .leftJoinAndSelect('mesa.sala', 'sala')
+      .leftJoinAndSelect('cita.sala', 'salaDirecta')
       .leftJoinAndSelect('cita.tramite', 'tramite')
+      .leftJoinAndSelect('cita.turnoLlegada', 'turnoLlegada')
       .take(limit)
       .skip(offset)
       .orderBy('cita.fechaHora', 'ASC');
@@ -127,15 +150,27 @@ export class CitasService {
       );
     }
     if (idUsuarioAsignado) {
-      queryBuilder.andWhere('cita.idUsuarioAsignado = :idUsuarioAsignado', { idUsuarioAsignado });
+      if (filterDto.includeUnassigned === 'true') {
+        const usuario = await this.usuarioRepository.findOne({ where: { id: idUsuarioAsignado }, relations: ['competencias'] });
+        const idsCompetencias = usuario?.competencias?.map(c => c.id) || [];
+        
+        if (idsCompetencias.length > 0) {
+          queryBuilder.andWhere('(cita.idUsuarioAsignado = :idUsuarioAsignado OR (cita.idUsuarioAsignado IS NULL AND (tramite.idCompetenciaRequerida IN (:...idsCompetencias) OR tramite.idCompetenciaRequerida IS NULL)))', { idUsuarioAsignado, idsCompetencias });
+        } else {
+          queryBuilder.andWhere('(cita.idUsuarioAsignado = :idUsuarioAsignado OR (cita.idUsuarioAsignado IS NULL AND tramite.idCompetenciaRequerida IS NULL))', { idUsuarioAsignado });
+        }
+      } else {
+        queryBuilder.andWhere('cita.idUsuarioAsignado = :idUsuarioAsignado', { idUsuarioAsignado });
+      }
+    } else if (filterDto.includeUnassigned === 'true') {
+      queryBuilder.andWhere('cita.idUsuarioAsignado IS NULL');
     }
     if (idCliente) {
       queryBuilder.andWhere('cita.idCliente = :idCliente', { idCliente });
     }
 
-   
     if (forcedIdEntidad) {
-      queryBuilder.andWhere('sala.idEntidad = :idEntidad', { idEntidad: forcedIdEntidad });
+      queryBuilder.andWhere('cita.idEntidad = :idEntidad', { idEntidad: forcedIdEntidad });
     }
 
     if (estado) {
@@ -172,7 +207,7 @@ export class CitasService {
   async findOne(id: string): Promise<Cita> {
     const cita = await this.citaRepository.findOne({
       where: { id },
-      relations: ['usuarioAsignado', 'mesa', 'tramite'],
+      relations: ['usuarioAsignado', 'mesa', 'mesa.sala', 'tramite', 'turnoLlegada'],
     });
 
     if (!cita) throw new NotFoundException(`Cita con id ${id} no encontrada`);
@@ -221,13 +256,19 @@ export class CitasService {
     });
     if (!tramite)
       throw new NotFoundException(`Trámite ${idTramite} no encontrado`);
-    const idCompReq = tramite.idCompetenciaRequerida;
+    const idCompReq = tramite.idCompetenciaRequerida;
+    const normDate = (d: string | Date): string => {
+      if (d instanceof Date) return d.toISOString().split('T')[0];
+      const s = String(d);
+      return s.length > 10 ? s.substring(0, 10) : s;
+    };
 
     const horarios = await this.horarioRepository.find({
       where: { idEntidad },
     });
+
     const horario =
-      horarios.find((h) => fecha >= h.fechaInicio && fecha <= h.fechaFin) ||
+      horarios.find((h) => fecha >= normDate(h.fechaInicio) && fecha <= normDate(h.fechaFin)) ||
       horarios[0];
 
     if (!horario) return [];
@@ -237,7 +278,23 @@ export class CitasService {
       relations: ['ausencias', 'competencias'],
     });
 
-    const usuariosAptos = todosLosUsuarios.filter((u) => {
+    let usuariosBase = todosLosUsuarios;
+
+    if (slotsFilterDto.idSala) {
+      const asignacionesDelDia = await this.asignacionMesaRepository.find({
+        where: { fecha, mesa: { idSala: slotsFilterDto.idSala } },
+        relations: ['mesa'],
+      });
+      const idsUsuariosAsignados = asignacionesDelDia.map(a => a.idUsuario);
+      
+      if (idsUsuariosAsignados.length > 0) {
+        usuariosBase = todosLosUsuarios.filter(u => idsUsuariosAsignados.includes(u.id));
+      } else {
+        usuariosBase = todosLosUsuarios;
+      }
+    }
+
+    const usuariosAptos = usuariosBase.filter((u) => {
       const tieneCompetencia = idCompReq
         ? u.competencias.some((c) => c.id === idCompReq)
         : true;
@@ -245,8 +302,8 @@ export class CitasService {
       const tieneAusencia = u.ausencias.some(
         (a) =>
           a.estado === 'Aprobada' &&
-          fecha >= a.fechaInicio &&
-          fecha <= a.fechaFin,
+          fecha >= normDate(a.fechaInicio) &&
+          fecha <= normDate(a.fechaFin),
       );
 
       return tieneCompetencia && !tieneAusencia;

@@ -36,10 +36,16 @@ export class CompetenciasService {
     }
   }
 
-  async findAll(): Promise<Competencia[]> {
-    return await this.competenciaRepository.find({
-      relations: ['entidad', 'usuarios'],
-    });
+  async findAll(idEntidad?: string): Promise<Competencia[]> {
+    const query = this.competenciaRepository.createQueryBuilder('competencia')
+      .leftJoinAndSelect('competencia.entidad', 'entidad')
+      .leftJoinAndSelect('competencia.usuarios', 'usuarios');
+
+    if (idEntidad) {
+      query.where('competencia.id_entidad = :idEntidad', { idEntidad });
+    }
+
+    return await query.getMany();
   }
 
   async findOne(id: string): Promise<Competencia> {

@@ -19,7 +19,7 @@ import {
 import { CompetenciasService } from './competencias.service';
 import { CreateCompetenciaDto, UpdateCompetenciaDto } from './dto';
 import { CompetenciaAdapter } from './adapters/competencia.adapter';
-import { Auth } from '../auth/decorators';
+import { Auth, CurrentUser } from '../auth/decorators';
 import { ValidRoles } from '../auth/interfaces';
 
 @ApiTags('Skills')
@@ -45,8 +45,9 @@ export class CompetenciasController {
     status: 201,
     description: 'The skills have been obtained successfully.',
   })
-  async findAll() {
-    const competencias = await this.competenciasService.findAll();
+  async findAll(@CurrentUser() user: any) {
+    const idEntidad = user?.idEntidad || user?.id_entidad;
+    const competencias = await this.competenciasService.findAll(idEntidad);
     return CompetenciaAdapter.toResponseList(competencias);
   }
 

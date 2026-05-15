@@ -13,10 +13,8 @@ async function bootstrap() {
   });
   const logger = new Logger('Bootstrap');
 
- 
   app.setGlobalPrefix('api/v1');
 
- 
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -25,10 +23,8 @@ async function bootstrap() {
     }),
   );
 
- 
   app.useGlobalFilters(new AllExceptionsFilter());
 
- 
   const config = new DocumentBuilder()
     .setTitle('GECIT API')
     .setDescription('Documentación de la API del sistema GECIT')
@@ -44,4 +40,5 @@ async function bootstrap() {
   logger.log(`Swagger docs en: http://localhost:${port}/api/v1/docs`);
 }
 
-void bootstrap();
+void bootstrap(); 
+

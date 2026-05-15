@@ -55,4 +55,12 @@ export class CreateSalaDto {
   @IsString()
   @IsOptional()
   colorFondo?: string;
+
+  @ApiPropertyOptional({
+    description: 'URL o ruta del plano de fondo de la sala',
+    example: 'media/planos/sala_principal.png',
+  })
+  @IsString()
+  @IsOptional()
+  urlPlano?: string;
 }

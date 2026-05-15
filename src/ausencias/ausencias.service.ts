@@ -50,7 +50,6 @@ export class AusenciasService {
       queryBuilder.andWhere('ausencia.idUsuario = :idUsuario', { idUsuario });
     }
 
-   
     if (forcedIdEntidad) {
       queryBuilder.andWhere('usuario.idEntidad = :idEntidad', { idEntidad: forcedIdEntidad });
     }

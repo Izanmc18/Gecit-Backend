@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { APP_GUARD } from '@nestjs/core';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 import { EntidadesModule } from './entidades/entidades.module';
 import { RolesModule } from './roles/roles.module';
@@ -19,6 +21,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { CompetenciasModule } from './competencias/competencias.module';
 import { TurnosLlegadaModule } from './turnos-llegada/turnos-llegada.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { MediaModule } from './media/media.module';
 
 @Module({
   imports: [
@@ -33,7 +36,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
       useFactory: (config: ConfigService) => {
         const host = config.get<string>('DB_HOST');
         const db = config.get<string>('DB_NAME');
-        console.log(`Conectando a base de datos: ${db} en ${host}`);
+        console.log(`HOT RELOAD TEST: Conectando a base de datos: ${db} en ${host}`);
         return {
           type: 'mysql',
           host: host,
@@ -46,6 +49,11 @@ import { AnalyticsModule } from './analytics/analytics.module';
           autoLoadEntities: true,
         };
       },
+    }),
+
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'public'),
+      serveRoot: '/public',
     }),
 
     EntidadesModule,
@@ -63,6 +71,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     CompetenciasModule,
     TurnosLlegadaModule,
     AnalyticsModule,
+    MediaModule,
   ],
   providers: [
     {

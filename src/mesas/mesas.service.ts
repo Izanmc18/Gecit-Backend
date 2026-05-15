@@ -43,7 +43,6 @@ export class MesasService {
     const mesa = await this.findOne(id);
     if (!mesa) throw new NotFoundException(`Mesa con id ${id} no encontrada`);
 
-   
     await this.mesaRepository.update(id, updateMesaDto);
 
     const updated = await this.findOne(id);

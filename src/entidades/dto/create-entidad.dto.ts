@@ -34,4 +34,9 @@ export class CreateEntidadDto {
   @IsBoolean()
   @IsOptional()
   activo?: boolean;
+
+  @ApiPropertyOptional({ type: [String], description: 'Nombres de trámites y competencias a crear automáticamente' })
+  @IsOptional()
+  @IsString({ each: true })
+  tramites?: string[];
 }

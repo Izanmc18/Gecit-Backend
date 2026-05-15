@@ -15,7 +15,7 @@ import { CreateUsuarioDto, UpdateUsuarioDto } from './dto';
 import { PaginationDto } from '../common/dto/pagination.dto';
 import { UsuarioAdapter } from './adapters/usuario.adapter';
 import { Public } from '../auth/decorators/public.decorator';
-import { Auth } from '../auth/decorators';
+import { Auth, CurrentUser } from '../auth/decorators';
 import { ValidRoles } from '../auth/interfaces';
 
 @ApiTags('Users')
@@ -28,18 +28,40 @@ export class UsuariosController {
   @ApiOperation({ summary: 'Create a new user' })
   @ApiResponse({ status: 201, description: 'User created successfully.' })
   @ApiResponse({ status: 400, description: 'Bad request.' })
-  async create(@Body() createUsuarioDto: CreateUsuarioDto) {
+  async create(
+    @Body() createUsuarioDto: CreateUsuarioDto,
+    @CurrentUser() adminUser: any,
+  ) {
+    const ADMIN_ROLE_ID = 'e51b3a32-1111-4a3b-9a99-b1d5c7f8a121';
+    const EMPLEADO_ROLE_ID = 'e51b3a32-2222-4a3b-9a99-b1d5c7f8a122';
+    if (adminUser.rol?.nombreRol === ValidRoles.admin && adminUser.idEntidad) {
+      createUsuarioDto.idEntidad = adminUser.idEntidad;
+      createUsuarioDto.debeCambiarPassword = true;
+    }
+    else if (adminUser.rol?.nombreRol === ValidRoles.superadmin) {
+      if (
+        createUsuarioDto.idRol === ADMIN_ROLE_ID ||
+        createUsuarioDto.idRol === EMPLEADO_ROLE_ID
+      ) {
+        createUsuarioDto.debeCambiarPassword = true;
+      }
+    }
+
     const usuario = await this.usuariosService.create(createUsuarioDto);
     return UsuarioAdapter.toResponse(usuario);
   }
 
   @Get()
-  @Public()
+  @Auth(ValidRoles.superadmin, ValidRoles.admin)
   @ApiOperation({ summary: 'Get all users with pagination' })
   @ApiResponse({ status: 200, description: 'Return all users.' })
   @ApiResponse({ status: 404, description: 'Users not found.' })
-  async findAll(@Query() paginationDto: PaginationDto) {
-    const usuarios = await this.usuariosService.findAll(paginationDto);
+  async findAll(
+    @Query() paginationDto: PaginationDto,
+    @CurrentUser() adminUser: any
+  ) {
+    const forcedIdEntidad = adminUser.rol?.nombreRol === 'Admin' ? adminUser.idEntidad : undefined;
+    const usuarios = await this.usuariosService.findAll(paginationDto, forcedIdEntidad);
     return usuarios.map(UsuarioAdapter.toResponse);
   }
 

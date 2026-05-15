@@ -6,9 +6,12 @@ export class LoginUserDto {
   idRol: string;
   idEntidad: string;
   fotoUrl: string | null;
+  dni?: string;
+  telefono?: string;
 }
 
 export class LoginResponseDto {
   token: string;
   user: LoginUserDto;
+  requirePasswordChange?: boolean;
 }

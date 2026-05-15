@@ -11,11 +11,14 @@ export class CitaResponse {
   usuarioAsignado?: any;
   idMesa: string;
   mesa?: any;
+  idSala: string;
+  sala?: any;
   idTramite: string;
   tramite?: any;
   fechaHora: Date;
   estado: EstadoCita;
   observaciones: string | null;
+  turnoLlegada?: any;
 }
 
 export class CitaAdapter {
@@ -33,6 +36,10 @@ export class CitaAdapter {
         : undefined,
       idMesa: cita.idMesa,
       mesa: cita.mesa ? { nombreMesa: cita.mesa.nombreMesa } : undefined,
+      idSala: cita.idSala,
+      sala: (cita.sala || (cita.mesa && cita.mesa.sala))
+        ? { nombreSala: (cita.sala ? cita.sala.nombreSala : cita.mesa.sala.nombreSala) }
+        : undefined,
       idTramite: cita.idTramite,
       tramite: cita.tramite
         ? { nombreTramite: cita.tramite.nombreTramite }
@@ -40,6 +47,13 @@ export class CitaAdapter {
       fechaHora: cita.fechaHora,
       estado: cita.estado,
       observaciones: cita.observaciones || null,
+      turnoLlegada: cita.turnoLlegada
+        ? {
+            id: cita.turnoLlegada.id,
+            codigoTicket: cita.turnoLlegada.codigoTicket,
+            estado: cita.turnoLlegada.estado,
+          }
+        : undefined,
     };
   }
 

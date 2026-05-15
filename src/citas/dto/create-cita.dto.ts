@@ -54,21 +54,29 @@ export class CreateCitaDto {
   @MaxLength(20)
   clienteTelefono?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'The ID of the assigned employee',
     example: '123e4567-e89b-12d3-a456-426614174000',
   })
   @IsUUID()
-  @IsNotEmpty()
-  idUsuarioAsignado: string;
+  @IsOptional()
+  idUsuarioAsignado?: string;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     description: 'The ID of the table',
     example: '123e4567-e89b-12d3-a456-426614174001',
   })
   @IsUUID()
-  @IsNotEmpty()
-  idMesa: string;
+  @IsOptional()
+  idMesa?: string;
+
+  @ApiPropertyOptional({
+    description: 'The ID of the room/office',
+    example: '123e4567-e89b-12d3-a456-426614174003',
+  })
+  @IsUUID()
+  @IsOptional()
+  idSala?: string;
 
   @ApiProperty({
     description: 'The ID of the procedure',

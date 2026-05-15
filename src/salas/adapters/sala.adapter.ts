@@ -7,6 +7,7 @@ export class SalaResponse {
   canvasWidth: number;
   canvasHeight: number;
   colorFondo: string;
+  urlPlano?: string;
 }
 
 export class SalaAdapter {
@@ -18,6 +19,7 @@ export class SalaAdapter {
       canvasWidth: sala.canvasWidth,
       canvasHeight: sala.canvasHeight,
       colorFondo: sala.colorFondo,
+      urlPlano: sala.urlPlano,
     };
   }
 
