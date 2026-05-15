@@ -70,6 +70,15 @@ export class CitasController {
     };
   }
 
+  @Get('my-appointments')
+  @Auth()
+  @ApiOperation({ summary: 'Get appointments for the logged-in client by email' })
+  @ApiResponse({ status: 200, description: 'Client appointments found.' })
+  async getMyAppointments(@CurrentUser('email') email: string) {
+    const citas = await this.citasService.findByClientEmail(email);
+    return CitaAdapter.toResponseList(citas);
+  }
+
   @Get('slots')
   @Public()
   @ApiOperation({
@@ -130,5 +139,17 @@ export class CitasController {
   })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.citasService.remove(id);
+  }
+
+  @Delete(':id/cancel')
+  @Auth()
+  @ApiOperation({ summary: 'Cancel (delete) own appointment as a client' })
+  @ApiResponse({ status: 200, description: 'Appointment cancelled and slot freed.' })
+  async cancelMyAppointment(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser('email') email: string,
+  ) {
+    await this.citasService.cancelByClient(id, email);
+    return { message: 'Cita cancelada correctamente' };
   }
 }

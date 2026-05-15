@@ -369,4 +369,25 @@ export class CitasService {
 
     return { reasignadas: citas.length };
   }
+
+  async findByClientEmail(email: string): Promise<Cita[]> {
+    return this.citaRepository
+      .createQueryBuilder('cita')
+      .leftJoinAndSelect('cita.tramite', 'tramite')
+      .leftJoinAndSelect('cita.mesa', 'mesa')
+      .leftJoinAndSelect('cita.sala', 'sala')
+      .leftJoinAndSelect('cita.turnoLlegada', 'turnoLlegada')
+      .where('cita.clienteEmail = :email', { email })
+      .orderBy('cita.fechaHora', 'DESC')
+      .getMany();
+  }
+
+  async cancelByClient(id: string, clienteEmail: string): Promise<void> {
+    const cita = await this.citaRepository.findOneBy({ id });
+    if (!cita) throw new NotFoundException(`Cita con id ${id} no encontrada`);
+    if (cita.clienteEmail !== clienteEmail) {
+      throw new BadRequestException('No tienes permiso para cancelar esta cita');
+    }
+    await this.citaRepository.remove(cita);
+  }
 }
