@@ -21,13 +21,13 @@ export class CreateUsuarioDto {
 
   @ApiProperty({ example: '12345678X' })
   @IsString()
-  @IsOptional()
-  dni?: string;
+  @IsNotEmpty()
+  dni: string;
 
-  @ApiPropertyOptional({ example: '+34600123456' })
+  @ApiProperty({ example: '600123456' })
   @IsString()
-  @IsOptional()
-  telefono?: string;
+  @IsNotEmpty()
+  telefono: string;
 
   @ApiProperty({ example: 'izan@example.com' })
   @IsEmail()
