@@ -12,6 +12,7 @@ export class UsuarioAdapter {
       fotoUrl: usuario.fotoUrl,
       activo: usuario.activo,
       rol: usuario.rol ? usuario.rol.nombreRol : null,
+      idRol: usuario.idRol,
       idEntidad: usuario.idEntidad,
       entidad: usuario.entidad ? usuario.entidad.nombre : null,
     };
