@@ -25,30 +25,70 @@ export class SeedService {
   ) {}
 
   async runSeed() {
+    // 1. Limpieza total y ordenada de tablas desactivando FOREIGN_KEY_CHECKS para evitar errores de FK
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+    try {
+      await queryRunner.query('SET FOREIGN_KEY_CHECKS = 0');
+      await queryRunner.query('TRUNCATE TABLE turnos_llegada');
+      await queryRunner.query('TRUNCATE TABLE asignacion_mesas');
+      await queryRunner.query('TRUNCATE TABLE ausencias');
+      await queryRunner.query('TRUNCATE TABLE competencias');
+      await queryRunner.query('TRUNCATE TABLE horarios');
+      await queryRunner.query('TRUNCATE TABLE festivos');
+      await queryRunner.query('TRUNCATE TABLE citas');
+      await queryRunner.query('TRUNCATE TABLE mesas');
+      await queryRunner.query('TRUNCATE TABLE salas');
+      await queryRunner.query('TRUNCATE TABLE usuarios');
+      await queryRunner.query('TRUNCATE TABLE entidades');
+      await queryRunner.query('TRUNCATE TABLE roles');
+      await queryRunner.query('TRUNCATE TABLE tramites');
+      await queryRunner.query('SET FOREIGN_KEY_CHECKS = 1');
+      await queryRunner.commitTransaction();
+    } catch (err) {
+      await queryRunner.rollbackTransaction();
+      throw err;
+    } finally {
+      await queryRunner.release();
+    }
 
+    // 2. Ejecutar la siembra con IDs de rol correctos y estáticos
     const roles = await this.seedRoles();
 
     const entities = await this.seedEntities();
+
+    const tramites = await this.seedTramites(entities);
 
     await this.seedUsers(entities, roles);
 
     await this.seedResources(entities);
 
-    await this.seedAppointments(entities);
+    await this.seedAppointments(entities, tramites);
 
     return { message: 'Seed executed successfully' };
   }
 
   private async seedRoles() {
-    const roleNames = ['SuperAdmin', 'Admin', 'Empleado', 'Cliente'];
+    const roleMappings = [
+      { name: 'SuperAdmin', id: 'e51b3a32-0000-4a3b-9a99-b1d5c7f8a120' },
+      { name: 'Admin', id: 'e51b3a32-1111-4a3b-9a99-b1d5c7f8a121' },
+      { name: 'Empleado', id: 'e51b3a32-2222-4a3b-9a99-b1d5c7f8a122' },
+      { name: 'Cliente', id: 'e51b3a32-3333-4a3b-9a99-b1d5c7f8a123' },
+    ];
     const roles: Record<string, Rol> = {};
 
-    for (const name of roleNames) {
-      let role = await this.rolRepo.findOne({ where: { nombreRol: name } });
+    for (const item of roleMappings) {
+      let role = await this.rolRepo.findOne({ where: { id: item.id } });
       if (!role) {
-        role = await this.rolRepo.save(this.rolRepo.create({ nombreRol: name }));
+        // En caso de que exista por nombre pero con otro ID
+        const existingByName = await this.rolRepo.findOne({ where: { nombreRol: item.name } });
+        if (existingByName) {
+          await this.rolRepo.delete(existingByName.id);
+        }
+        role = await this.rolRepo.save(this.rolRepo.create({ id: item.id, nombreRol: item.name }));
       }
-      roles[name] = role;
+      roles[item.name] = role;
     }
     return roles;
   }
@@ -127,11 +167,33 @@ export class SeedService {
     }
   }
 
-  private async seedAppointments(entities: Entidad[]) {
+  private async seedTramites(entities: Entidad[]) {
+    const tramites: Record<string, Tramite> = {};
+    const nombresTramite = ['Gestión de Trámites Generales', 'Licencias', 'Padrón y Censo'];
+
+    for (const ent of entities) {
+      for (const nombre of nombresTramite) {
+        let tramite = await this.tramiteRepo.findOne({ where: { nombreTramite: nombre, idEntidad: ent.id } });
+        if (!tramite) {
+          tramite = await this.tramiteRepo.save(this.tramiteRepo.create({
+            nombreTramite: nombre,
+            descripcion: `Descripción para ${nombre}`,
+            idEntidad: ent.id,
+          }));
+        }
+        tramites[`${ent.dominio}_${nombre}`] = tramite;
+      }
+    }
+    return tramites;
+  }
+
+  private async seedAppointments(entities: Entidad[], tramites: Record<string, Tramite>) {
     const demoDates = ['2026-05-18', '2026-05-19'];
     const hours = ['09:00', '10:30', '12:00', '13:30'];
 
     for (const ent of entities) {
+      const defaultTramite = tramites[`${ent.dominio}_Gestión de Trámites Generales`] || Object.values(tramites).find(t => t.idEntidad === ent.id);
+      if (!defaultTramite) continue;
 
       const pastDate = new Date();
       pastDate.setDate(pastDate.getDate() - 2);
@@ -148,7 +210,8 @@ export class SeedService {
               clienteEmail: `past${i}@test.com`,
               clienteDni: `1234567${i}X`,
               fechaHora: new Date(`${pastDateStr} 10:00:00`),
-              estado: EstadoCita.REALIZADA
+              estado: EstadoCita.REALIZADA,
+              idTramite: defaultTramite.id
             }));
          }
 
@@ -161,7 +224,8 @@ export class SeedService {
                 clienteEmail: 'demo@innovasur.com',
                 clienteDni: '99999999Z',
                 fechaHora: new Date(`${date} ${hour}:00`),
-                estado: EstadoCita.PENDIENTE
+                estado: EstadoCita.PENDIENTE,
+                idTramite: defaultTramite.id
               }));
             }
          }

@@ -22,6 +22,7 @@ import { CompetenciasModule } from './competencias/competencias.module';
 import { TurnosLlegadaModule } from './turnos-llegada/turnos-llegada.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { MediaModule } from './media/media.module';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { MediaModule } from './media/media.module';
     TurnosLlegadaModule,
     AnalyticsModule,
     MediaModule,
+    SeedModule,
   ],
   providers: [
     {
