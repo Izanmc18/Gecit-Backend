@@ -30,8 +30,9 @@ export class CompetenciasController {
 
   @Post()
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Crear una nueva competencia (Admin)' })
-  @ApiResponse({ status: 201, description: 'Competencia creada correctamente' })
+  @ApiOperation({ summary: 'Create a new skill (Admin only)' })
+  @ApiResponse({ status: 201, description: 'Skill created successfully. Returns the new skill.' })
+  @ApiResponse({ status: 400, description: 'Bad request. Invalid data.' })
   async create(@Body() createCompetenciaDto: CreateCompetenciaDto) {
     const competencia =
       await this.competenciasService.create(createCompetenciaDto);
@@ -40,10 +41,10 @@ export class CompetenciasController {
 
   @Get()
   @Auth(ValidRoles.admin, ValidRoles.empleado)
-  @ApiOperation({ summary: 'Obtener todas las competencias' })
+  @ApiOperation({ summary: 'Get all skills' })
   @ApiResponse({
-    status: 201,
-    description: 'The skills have been obtained successfully.',
+    status: 200,
+    description: 'Returns a list of all skills successfully.',
   })
   async findAll(@CurrentUser() user: any) {
     const idEntidad = user?.idEntidad || user?.id_entidad;
@@ -53,11 +54,12 @@ export class CompetenciasController {
 
   @Get(':id')
   @Auth(ValidRoles.admin, ValidRoles.empleado)
-  @ApiOperation({ summary: 'Obtener una competencia por ID' })
+  @ApiOperation({ summary: 'Get a skill by ID' })
   @ApiResponse({
-    status: 201,
-    description: 'The skill has been obtained successfully.',
+    status: 200,
+    description: 'Returns the specified skill successfully.',
   })
+  @ApiResponse({ status: 404, description: 'Skill not found. The ID does not exist.' })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const competencia = await this.competenciasService.findOne(id);
     return CompetenciaAdapter.toResponse(competencia);
@@ -65,11 +67,12 @@ export class CompetenciasController {
 
   @Patch(':id')
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Actualizar una competencia (Admin)' })
+  @ApiOperation({ summary: 'Update a skill by ID (Admin only)' })
   @ApiResponse({
-    status: 201,
-    description: 'The skill has been updated successfully.',
+    status: 200,
+    description: 'Skill updated successfully. Returns the updated skill.',
   })
+  @ApiResponse({ status: 404, description: 'Skill not found. The ID does not exist.' })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCompetenciaDto: UpdateCompetenciaDto,
@@ -84,22 +87,24 @@ export class CompetenciasController {
   @Delete(':id')
   @Auth(ValidRoles.admin)
   @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiOperation({ summary: 'Eliminar una competencia (Admin)' })
+  @ApiOperation({ summary: 'Delete a skill by ID (Admin only)' })
   @ApiResponse({
-    status: 201,
-    description: 'The skill has been deleted successfully.',
+    status: 204,
+    description: 'Skill deleted successfully.',
   })
+  @ApiResponse({ status: 404, description: 'Skill not found. The ID does not exist.' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.competenciasService.remove(id);
   }
 
   @Post(':id/users/:idUsuario')
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Asignar competencia a un usuario (Admin)' })
+  @ApiOperation({ summary: 'Assign a skill to a user (Admin only)' })
   @ApiResponse({
-    status: 201,
-    description: 'The skill has been assigned successfully.',
+    status: 200,
+    description: 'Skill assigned to user successfully. Returns the updated skill.',
   })
+  @ApiResponse({ status: 404, description: 'Skill or User not found.' })
   async asignarUsuario(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('idUsuario', ParseUUIDPipe) idUsuario: string,
@@ -113,11 +118,12 @@ export class CompetenciasController {
 
   @Delete(':id/users/:idUsuario')
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Desasignar competencia de un usuario (Admin)' })
+  @ApiOperation({ summary: 'Unassign a skill from a user (Admin only)' })
   @ApiResponse({
-    status: 201,
-    description: 'The skill has been unassigned successfully.',
+    status: 200,
+    description: 'Skill unassigned from user successfully. Returns the updated skill.',
   })
+  @ApiResponse({ status: 404, description: 'Skill or User not found.' })
   async desasignarUsuario(
     @Param('id', ParseUUIDPipe) id: string,
     @Param('idUsuario', ParseUUIDPipe) idUsuario: string,

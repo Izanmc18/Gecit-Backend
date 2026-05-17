@@ -9,13 +9,15 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname, join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
-import { ApiTags, ApiOperation, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiConsumes, ApiBody, ApiResponse } from '@nestjs/swagger';
 
 @ApiTags('Media')
 @Controller('media')
 export class MediaController {
   @Post('upload/plano')
-  @ApiOperation({ summary: 'Subir un plano de sala (imagen)' })
+  @ApiOperation({ summary: 'Upload a room plan image' })
+  @ApiResponse({ status: 201, description: 'Image uploaded successfully. Returns the relative URL.' })
+  @ApiResponse({ status: 400, description: 'Bad request. Invalid file format or missing file.' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {

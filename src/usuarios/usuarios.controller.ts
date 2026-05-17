@@ -26,8 +26,8 @@ export class UsuariosController {
   @Post()
   @Auth(ValidRoles.superadmin, ValidRoles.admin)
   @ApiOperation({ summary: 'Create a new user' })
-  @ApiResponse({ status: 201, description: 'User created successfully.' })
-  @ApiResponse({ status: 400, description: 'Bad request.' })
+  @ApiResponse({ status: 201, description: 'User created successfully. Returns the newly created user.' })
+  @ApiResponse({ status: 400, description: 'Bad request. The input data is invalid.' })
   async create(
     @Body() createUsuarioDto: CreateUsuarioDto,
     @CurrentUser() adminUser: any,
@@ -54,8 +54,8 @@ export class UsuariosController {
   @Get()
   @Auth(ValidRoles.superadmin, ValidRoles.admin)
   @ApiOperation({ summary: 'Get all users with pagination' })
-  @ApiResponse({ status: 200, description: 'Return all users.' })
-  @ApiResponse({ status: 404, description: 'Users not found.' })
+  @ApiResponse({ status: 200, description: 'Returns a list of all users successfully.' })
+  @ApiResponse({ status: 404, description: 'Users not found in the system.' })
   async findAll(
     @Query() paginationDto: PaginationDto,
     @CurrentUser() adminUser: any
@@ -67,8 +67,8 @@ export class UsuariosController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a user by ID' })
-  @ApiResponse({ status: 200, description: 'Return the user.' })
-  @ApiResponse({ status: 404, description: 'User not found.' })
+  @ApiResponse({ status: 200, description: 'Returns the specified user successfully.' })
+  @ApiResponse({ status: 404, description: 'User not found. The ID does not exist.' })
   async findOne(@Param('id') id: string) {
     const usuario = await this.usuariosService.findOne(id);
     return UsuarioAdapter.toResponse(usuario);
@@ -76,9 +76,9 @@ export class UsuariosController {
 
   @Patch(':id')
   @Auth(ValidRoles.superadmin, ValidRoles.admin)
-  @ApiOperation({ summary: 'Update a user' })
-  @ApiResponse({ status: 200, description: 'User updated successfully.' })
-  @ApiResponse({ status: 404, description: 'User not found.' })
+  @ApiOperation({ summary: 'Update a user by ID' })
+  @ApiResponse({ status: 200, description: 'User updated successfully. Returns the updated user.' })
+  @ApiResponse({ status: 404, description: 'User not found. The ID does not exist.' })
   async update(
     @Param('id') id: string,
     @Body() updateUsuarioDto: UpdateUsuarioDto,
@@ -89,9 +89,9 @@ export class UsuariosController {
 
   @Delete(':id')
   @Auth(ValidRoles.superadmin, ValidRoles.admin)
-  @ApiOperation({ summary: 'Delete a user' })
+  @ApiOperation({ summary: 'Delete a user by ID' })
   @ApiResponse({ status: 200, description: 'User deleted successfully.' })
-  @ApiResponse({ status: 404, description: 'User not found.' })
+  @ApiResponse({ status: 404, description: 'User not found. The ID does not exist.' })
   async remove(@Param('id') id: string) {
     await this.usuariosService.remove(id);
     return { message: 'User deleted' };

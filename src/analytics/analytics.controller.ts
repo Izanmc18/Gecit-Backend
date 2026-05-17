@@ -18,10 +18,10 @@ export class AnalyticsController {
 
   @Get('global')
   @Public()
-  @ApiOperation({ summary: 'Métricas globales del sistema (SuperAdmin)' })
+  @ApiOperation({ summary: 'Get global system metrics (SuperAdmin)' })
   @ApiResponse({
     status: 200,
-    description: 'Global stats found successfully.',
+    description: 'Returns global stats successfully.',
   })
   async getGlobalStats() {
     return this.analyticsService.getGlobalStats();
@@ -29,14 +29,17 @@ export class AnalyticsController {
 
   @Get('heatmap')
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Distribución de carga por horas' })
+  @ApiOperation({ summary: 'Get hourly load distribution heatmap' })
+  @ApiResponse({ status: 200, description: 'Returns heatmap data successfully.' })
   async getHeatmap() {
     return this.analyticsService.getHeatmap();
   }
 
   @Get('entidad/:id')
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Métricas específicas de una entidad' })
+  @ApiOperation({ summary: 'Get specific metrics for an entity' })
+  @ApiResponse({ status: 200, description: 'Returns entity metrics successfully.' })
+  @ApiResponse({ status: 404, description: 'Entity not found. The ID does not exist.' })
   async getEntidadStats(@Param('id', ParseUUIDPipe) id: string) {
     return this.analyticsService.getEntidadStats(id);
   }
@@ -44,8 +47,10 @@ export class AnalyticsController {
   @Get('dashboard/:id')
   @Auth(ValidRoles.admin)
   @ApiOperation({
-    summary: 'Resumen completo para el dashboard de administración',
+    summary: 'Get complete summary for the admin dashboard',
   })
+  @ApiResponse({ status: 200, description: 'Returns the dashboard summary successfully.' })
+  @ApiResponse({ status: 404, description: 'Entity not found. The ID does not exist.' })
   async getDashboardSummary(@Param('id', ParseUUIDPipe) id: string) {
     return this.analyticsService.getDashboardSummary(id);
   }

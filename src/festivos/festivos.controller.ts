@@ -29,7 +29,8 @@ export class FestivosController {
   @Post()
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Create a new holiday (Admin only)' })
-  @ApiResponse({ status: 201, description: 'Holiday created successfully.' })
+  @ApiResponse({ status: 201, description: 'Holiday created successfully. Returns the new holiday.' })
+  @ApiResponse({ status: 400, description: 'Bad request. Invalid data.' })
   async create(@Body() createFestivoDto: CreateFestivoDto) {
     const festivo = await this.festivosService.create(createFestivoDto);
     return FestivoAdapter.toResponse(festivo);
@@ -39,8 +40,8 @@ export class FestivosController {
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get a list of all holidays' })
   @ApiResponse({
-    status: 201,
-    description: 'Holidays found successfully.',
+    status: 200,
+    description: 'Returns a list of all holidays successfully.',
   })
   async findAll() {
     const festivos = await this.festivosService.findAll();
@@ -51,9 +52,10 @@ export class FestivosController {
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get one holiday by ID' })
   @ApiResponse({
-    status: 201,
-    description: 'Holiday found successfully.',
+    status: 200,
+    description: 'Returns the specified holiday successfully.',
   })
+  @ApiResponse({ status: 404, description: 'Holiday not found. The ID does not exist.' })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const festivo = await this.festivosService.findOne(id);
     return FestivoAdapter.toResponse(festivo);
@@ -63,9 +65,10 @@ export class FestivosController {
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Update a holiday by ID (Admin only)' })
   @ApiResponse({
-    status: 201,
-    description: 'Holiday updated successfully.',
+    status: 200,
+    description: 'Holiday updated successfully. Returns the updated holiday.',
   })
+  @ApiResponse({ status: 404, description: 'Holiday not found. The ID does not exist.' })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateFestivoDto: UpdateFestivoDto,
@@ -78,9 +81,10 @@ export class FestivosController {
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Delete a holiday by ID (Admin only)' })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Holiday deleted successfully.',
   })
+  @ApiResponse({ status: 404, description: 'Holiday not found. The ID does not exist.' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.festivosService.remove(id);
   }

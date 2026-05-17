@@ -32,8 +32,9 @@ export class AusenciasController {
   @ApiOperation({ summary: 'Create a new absence request' })
   @ApiResponse({
     status: 201,
-    description: 'Absence request created successfully.',
+    description: 'Absence request created successfully. Returns the new request.',
   })
+  @ApiResponse({ status: 400, description: 'Bad request. Invalid data.' })
   async create(@Body() createAusenciaDto: CreateAusenciaDto) {
     const ausencia = await this.ausenciasService.create(createAusenciaDto);
     return AusenciaAdapter.toResponse(ausencia);
@@ -43,8 +44,8 @@ export class AusenciasController {
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get a list of all absence requests' })
   @ApiResponse({
-    status: 201,
-    description: 'Absence requests found successfully.',
+    status: 200,
+    description: 'Returns a paginated list of absence requests successfully.',
   })
   async findAll(
     @Query() filterAusenciaDto: FilterAusenciaDto,
@@ -64,9 +65,10 @@ export class AusenciasController {
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Approve an absence request (Admin)' })
   @ApiResponse({
-    status: 201,
-    description: 'Absence request approved successfully.',
+    status: 200,
+    description: 'Absence request approved successfully. Returns the updated request.',
   })
+  @ApiResponse({ status: 404, description: 'Absence request not found. The ID does not exist.' })
   async approve(@Param('id', ParseUUIDPipe) id: string) {
     const ausencia = await this.ausenciasService.approve(id);
     return AusenciaAdapter.toResponse(ausencia);
@@ -76,9 +78,10 @@ export class AusenciasController {
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Reject an absence request (Admin)' })
   @ApiResponse({
-    status: 201,
-    description: 'Absence request rejected successfully.',
+    status: 200,
+    description: 'Absence request rejected successfully. Returns the updated request.',
   })
+  @ApiResponse({ status: 404, description: 'Absence request not found. The ID does not exist.' })
   async reject(@Param('id', ParseUUIDPipe) id: string) {
     const ausencia = await this.ausenciasService.reject(id);
     return AusenciaAdapter.toResponse(ausencia);
@@ -88,9 +91,10 @@ export class AusenciasController {
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get one absence request by ID' })
   @ApiResponse({
-    status: 201,
-    description: 'Absence request found successfully.',
+    status: 200,
+    description: 'Returns the specified absence request successfully.',
   })
+  @ApiResponse({ status: 404, description: 'Absence request not found. The ID does not exist.' })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const ausencia = await this.ausenciasService.findOne(id);
     return AusenciaAdapter.toResponse(ausencia);
@@ -100,9 +104,10 @@ export class AusenciasController {
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Update an absence request by ID' })
   @ApiResponse({
-    status: 201,
-    description: 'Absence request updated successfully.',
+    status: 200,
+    description: 'Absence request updated successfully. Returns the updated request.',
   })
+  @ApiResponse({ status: 404, description: 'Absence request not found. The ID does not exist.' })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateAusenciaDto: UpdateAusenciaDto,
@@ -115,9 +120,10 @@ export class AusenciasController {
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Delete an absence request by ID' })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Absence request deleted successfully.',
   })
+  @ApiResponse({ status: 404, description: 'Absence request not found. The ID does not exist.' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.ausenciasService.remove(id);
   }

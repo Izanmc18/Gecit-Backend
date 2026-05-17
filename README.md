@@ -1,98 +1,97 @@
+# ⚙️ GECIT - Backend API
+**NestJS • TypeScript • MySQL • JWT • TypeORM • Swagger • Docker**
+
+¡Bienvenido al núcleo central de **GECIT** (Gestión de Espacios y Citas de Innovasur)! Este repositorio contiene la robusta y eficiente API RESTful que actúa como cerebro de la plataforma integral de gestión de reservas, turnos, ofimática y administración.
+
+El objetivo de este backend es proporcionar una infraestructura escalable, segura y altamente performante para administrar citas previas, mapas de mesas, competencias de empleados y generación automática de tickets, sirviendo datos complejos de forma ágil a los diferentes clientes.
+
+---
+
+## 🚀 Características Principales
+- **Seguridad de Grado Militar (JWT)**: Sistema centralizado de autenticación con JSON Web Tokens y un sistema de control de acceso hiper-granular validando múltiples perfiles y jerarquías (`SUPERADMIN`, `ADMIN`, `EMPLEADO`, `CLIENTE`).
+- **Arquitectura Multitenant**: La base de datos y la lógica de negocio soportan múltiples entidades de manera simultánea. La información está encapsulada para que un operador de una organización jamás interfiera con los datos de otra entidad.
+- **Eventos en Tiempo Real (SSE)**: Implementación de flujos reactivos mediante Server-Sent Events (SSE) para emitir actualizaciones en vivo, como la notificación a pantallas de sala de espera cuando se llama a un ticket, sin sobrecargar la red.
+- **Escalabilidad y Balanceo de Carga**: Configuración nativa para su ejecución en clústers mediante Docker y **Nginx Load Balancer**, soportando arquitecturas asimétricas (ej: un nodo procesando el 70% de la carga y réplicas menores).
+- **Dashboard Analytics**: Múltiples endpoints analíticos para calcular y retornar distribuciones, mapas de calor horarios, históricos y tendencias en vivo requeridas por los gráficos del administrador.
+- **Documentación Viva**: Integración total con **Swagger/OpenAPI** parametrizada profesionalmente en idioma inglés, lo que garantiza que cualquier desarrollador externo pueda explorar e invocar la API mediante una interfaz visual sin escribir código extra.
+
+---
+
+## 🛠️ Arquitectura y Construcción
+Este proyecto abraza los principios de la Arquitectura Modular y la Inyección de Dependencias impulsada por NestJS, manteniendo un código sumamente escalable.
+
+### 1. Capa de Seguridad (Security & Decorators)
+El "portero" blindado de la aplicación.
+- Uso de Guards globales combinados con decoradores customizados (`@Auth()`, `@CurrentUser()`, `@Public()`) para decidir la autorización de forma declarativa.
+- Empleo del estándar `bcrypt` para el hasheo unidireccional de contraseñas de todos los agentes del sistema.
+
+### 2. Capa de Controladores (Controllers)
+Los puentes de la aplicación hacia internet.
+- Capturan peticiones HTTP y delegan instantáneamente en la capa de servicios.
+- Sanitación automática de payloads entrantes mediante el uso de `class-validator` en los Data Transfer Objects (DTOs).
+- Totalmente anotados (`@ApiResponse`, `@ApiOperation`) para el autodescubrimiento de Swagger.
+
+### 3. Lógica de Negocio (Services & Adapters)
+Donde reside toda la magia de cálculo.
+- **Trámites y Horarios**: Procesos exhaustivos para cruzar calendarios de empleados, festivos, sus competencias y las mesas disponibles para deducir de forma precisa los "slots" horarios a ofertar.
+- **Adapters**: Patrón de diseño estructural implementado para transmutar las Entidades complejas de base de datos a respuestas DTO prístinas y uniformes para el Frontend.
+
+### 4. Acceso a Datos (TypeORM + Entities)
+Comunicación ORM nativa y robusta contra el motor MySQL.
+- Mapeos de bases de datos altamente relacionales (`@OneToMany`, `@ManyToMany`, `@JoinColumn`) para soportar entidades en cascada y foreign keys dinámicas.
+- Tipado rígido desde la concepción de la base de datos hasta su llegada al Response JSON final.
+
+---
+
+## 📦 Instalación y Desarrollo
+¿Quieres arrancar la API en tu servidor o máquina de pruebas? Sigue los pasos:
+
+1. **Clona el repositorio**:
+   ```bash
+   git clone <URL_DEL_REPOSITORIO>/gecit-backend.git
+   cd gecit-backend
+   ```
+
+2. **Configura tu Base de Datos**: 
+   Asegúrate de contar con MySQL ejecutándose en el puerto 3306. Copia o renombra tu archivo `.env.template` a `.env` y carga tus credenciales:
+   ```env
+   DB_HOST=localhost
+   DB_PORT=3306
+   DB_USER=root
+   DB_PASS=tu_password
+   DB_NAME=gecit_db
+   JWT_SECRET=gecit_super_secreto_cambiar_en_produccion
+   JWT_EXPIRES_IN=8h
+   ```
+
+3. **Instala dependencias y levanta el entorno**:
+   ```bash
+   npm install --legacy-peer-deps
+   npm run start:dev
+   ```
+
+¡Listo! Tu backend estará en activo e interactuando en caliente desde: `http://localhost:3000/api/v1`
+
+---
+
+## 🏗️ Despliegue en Clúster (Docker Compose)
+Este proyecto de backend incluye la infraestructura exacta para ser servido en producción a través de un ecosistema Dockerizado de alta disponibilidad.
+
+En la raíz global del proyecto ejecuta:
+```bash
+docker-compose up --build -d
+```
+Esto desplegará **3 instancias del backend** de NestJS trabajando en un clúster simultáneo y balanceado dinámicamente por un servidor **Nginx** frontal. 
+
+---
+
+## 🧪 Pruebas y Documentación Interactiva
+Una vez tengas el servidor local encendido (o a través del clúster), la documentación interactiva Swagger estará accesible de inmediato desde:
+
+👉 **[http://localhost:3000/api/v1/docs](http://localhost:3000/api/v1/docs)**
+
+---
+
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+  Desarrollado con ❤️ para el Reto Innovasur y mi Trabajo de Final de Grado de Desarrollo de Aplicaciones Web.
 </p>
-
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
-
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
-
-## Description
-
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
-
-```bash
-$ npm install
-```
-
-## Compile and run the project
-
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
-```
-
-## Run tests
-
-```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).

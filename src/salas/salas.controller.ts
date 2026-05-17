@@ -29,6 +29,9 @@ export class SalasController {
 
   @Public()
   @Get('public/:idEntidad')
+  @ApiOperation({ summary: 'Get all public rooms for an entity' })
+  @ApiResponse({ status: 200, description: 'Returns a list of public rooms successfully.' })
+  @ApiResponse({ status: 404, description: 'Entity not found. The ID does not exist.' })
   async findAllPublic(@Param('idEntidad', ParseUUIDPipe) idEntidad: string) {
     const salas = await this.salasService.findAll(idEntidad);
     return SalaAdapter.toResponseList(salas);
@@ -37,7 +40,8 @@ export class SalasController {
   @Post()
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Create a new room (Admin only)' })
-  @ApiResponse({ status: 201, description: 'Room created successfully.' })
+  @ApiResponse({ status: 201, description: 'Room created successfully. Returns the new room.' })
+  @ApiResponse({ status: 400, description: 'Bad request. The input data is invalid.' })
   async create(@Body() createSalaDto: CreateSalaDto) {
     const sala = await this.salasService.create(createSalaDto);
     return SalaAdapter.toResponse(sala);
@@ -47,8 +51,8 @@ export class SalasController {
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get all rooms' })
   @ApiResponse({
-    status: 201,
-    description: 'Rooms found successfully.',
+    status: 200,
+    description: 'Returns a list of all rooms successfully.',
   })
   async findAll(@CurrentUser('idEntidad') idEntidad: string) {
     const salas = await this.salasService.findAll(idEntidad);
@@ -59,9 +63,10 @@ export class SalasController {
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get a room by ID' })
   @ApiResponse({
-    status: 201,
-    description: 'Room found successfully.',
+    status: 200,
+    description: 'Returns the specified room successfully.',
   })
+  @ApiResponse({ status: 404, description: 'Room not found. The ID does not exist.' })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const sala = await this.salasService.findOne(id);
     return SalaAdapter.toResponse(sala);
@@ -69,11 +74,12 @@ export class SalasController {
 
   @Patch(':id')
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Update a room' })
+  @ApiOperation({ summary: 'Update a room by ID' })
   @ApiResponse({
-    status: 201,
-    description: 'Room updated successfully.',
+    status: 200,
+    description: 'Room updated successfully. Returns the updated room.',
   })
+  @ApiResponse({ status: 404, description: 'Room not found. The ID does not exist.' })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateSalaDto: UpdateSalaDto,
@@ -84,11 +90,12 @@ export class SalasController {
 
   @Delete(':id')
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Delete a room' })
+  @ApiOperation({ summary: 'Delete a room by ID' })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Room deleted successfully.',
   })
+  @ApiResponse({ status: 404, description: 'Room not found. The ID does not exist.' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.salasService.remove(id);
   }

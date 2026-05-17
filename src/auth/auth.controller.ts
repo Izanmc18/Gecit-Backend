@@ -13,8 +13,8 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login a user and get a token' })
-  @ApiResponse({ status: 200, description: 'Login successful.' })
-  @ApiResponse({ status: 401, description: 'Invalid credentials.' })
+  @ApiResponse({ status: 200, description: 'Login successful. Returns the JWT token and user info.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized. Invalid email or password.' })
   login(@Body() loginDto: LoginDto): Promise<LoginResponseDto> {
     return this.authService.login(loginDto);
   }
@@ -23,8 +23,8 @@ export class AuthController {
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Register a new client user' })
-  @ApiResponse({ status: 201, description: 'Registration successful.' })
-  @ApiResponse({ status: 400, description: 'Bad request.' })
+  @ApiResponse({ status: 201, description: 'Registration successful. Returns the new user and JWT token.' })
+  @ApiResponse({ status: 400, description: 'Bad request. The registration data is invalid.' })
   register(@Body() registerDto: RegisterDto): Promise<LoginResponseDto> {
     return this.authService.register(registerDto);
   }
@@ -32,9 +32,9 @@ export class AuthController {
   @Patch('change-first-password')
   @Auth()
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Change password for the first time' })
-  @ApiResponse({ status: 200, description: 'Password changed successfully.' })
-  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiOperation({ summary: 'Change user password for the first time' })
+  @ApiResponse({ status: 200, description: 'Password changed successfully. Returns a success message.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized. The user must be authenticated.' })
   async changeFirstPassword(
     @CurrentUser('id') userId: string,
     @Body() changePasswordDto: ChangePasswordDto,

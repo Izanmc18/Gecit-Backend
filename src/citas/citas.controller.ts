@@ -39,8 +39,9 @@ export class CitasController {
   @ApiOperation({ summary: 'Create a new appointment' })
   @ApiResponse({
     status: 201,
-    description: 'Appointment created successfully.',
+    description: 'Appointment created successfully. Returns the new appointment.',
   })
+  @ApiResponse({ status: 400, description: 'Bad request. Invalid data.' })
   async create(@Body() createCitaDto: CreateCitaDto) {
     const cita = await this.citasService.create(createCitaDto);
     return CitaAdapter.toResponse(cita);
@@ -53,8 +54,8 @@ export class CitasController {
       'Get a list of all appointments with search, filters and pagination',
   })
   @ApiResponse({
-    status: 201,
-    description: 'Appointments found successfully.',
+    status: 200,
+    description: 'Returns a paginated list of appointments successfully.',
   })
   async findAll(
     @Query() filterDto: FilterCitaDto,
@@ -73,7 +74,7 @@ export class CitasController {
   @Get('my-appointments')
   @Auth()
   @ApiOperation({ summary: 'Get appointments for the logged-in client by email' })
-  @ApiResponse({ status: 200, description: 'Client appointments found.' })
+  @ApiResponse({ status: 200, description: 'Returns a list of the client appointments.' })
   async getMyAppointments(@CurrentUser('email') email: string) {
     const citas = await this.citasService.findByClientEmail(email);
     return CitaAdapter.toResponseList(citas);
@@ -82,11 +83,11 @@ export class CitasController {
   @Get('slots')
   @Public()
   @ApiOperation({
-    summary: 'Obtener huecos disponibles para una fecha y trámite',
+    summary: 'Get available time slots for a specific date and service',
   })
   @ApiResponse({
-    status: 201,
-    description: 'Slots found successfully.',
+    status: 200,
+    description: 'Returns a list of available slots.',
   })
   async getDisponibilidad(@Query() slotsFilterDto: SlotsFilterDto) {
     return this.citasService.getDisponibilidad(slotsFilterDto);
@@ -94,9 +95,9 @@ export class CitasController {
 
   @Post('reasignar-masivo')
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Reasignar citas de un empleado a otro' })
+  @ApiOperation({ summary: 'Reassign appointments from one employee to another' })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Appointments reassigned successfully.',
   })
   async reasignarMasivo(@Body() reasignarDto: ReasignarMasivoDto) {
@@ -107,9 +108,10 @@ export class CitasController {
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get one appointment by ID' })
   @ApiResponse({
-    status: 201,
-    description: 'Appointment found successfully.',
+    status: 200,
+    description: 'Returns the specified appointment successfully.',
   })
+  @ApiResponse({ status: 404, description: 'Appointment not found. The ID does not exist.' })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const cita = await this.citasService.findOne(id);
     return CitaAdapter.toResponse(cita);
@@ -119,9 +121,10 @@ export class CitasController {
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Update an appointment by ID' })
   @ApiResponse({
-    status: 201,
-    description: 'Appointment updated successfully.',
+    status: 200,
+    description: 'Appointment updated successfully. Returns the updated appointment.',
   })
+  @ApiResponse({ status: 404, description: 'Appointment not found.' })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCitaDto: UpdateCitaDto,
@@ -134,9 +137,10 @@ export class CitasController {
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Delete an appointment by ID' })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Appointment deleted successfully.',
   })
+  @ApiResponse({ status: 404, description: 'Appointment not found.' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.citasService.remove(id);
   }
@@ -144,7 +148,7 @@ export class CitasController {
   @Delete(':id/cancel')
   @Auth()
   @ApiOperation({ summary: 'Cancel (delete) own appointment as a client' })
-  @ApiResponse({ status: 200, description: 'Appointment cancelled and slot freed.' })
+  @ApiResponse({ status: 200, description: 'Appointment cancelled and slot freed successfully.' })
   async cancelMyAppointment(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser('email') email: string,

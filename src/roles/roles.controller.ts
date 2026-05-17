@@ -29,8 +29,8 @@ export class RolesController {
   @Post()
   @Auth(ValidRoles.superadmin, ValidRoles.admin)
   @ApiOperation({ summary: 'Create a new role' })
-  @ApiResponse({ status: 201, description: 'Role created successfully.' })
-  @ApiResponse({ status: 403, description: 'Forbidden.' })
+  @ApiResponse({ status: 201, description: 'Role created successfully. Returns the new role.' })
+  @ApiResponse({ status: 403, description: 'Forbidden. You do not have permissions.' })
   async create(@Body() createRolDto: CreateRolDto) {
     const rol = await this.rolesService.create(createRolDto);
     return RolAdapter.toResponse(rol);
@@ -39,7 +39,7 @@ export class RolesController {
   @Get()
   @Auth(ValidRoles.superadmin, ValidRoles.admin)
   @ApiOperation({ summary: 'Get all roles' })
-  @ApiResponse({ status: 200, description: 'List of roles' })
+  @ApiResponse({ status: 200, description: 'Returns a list of all roles successfully.' })
   async findAll() {
     const roles = await this.rolesService.findAll();
     return RolAdapter.toResponseList(roles);
@@ -48,7 +48,8 @@ export class RolesController {
   @Get(':id')
   @Auth(ValidRoles.superadmin, ValidRoles.admin)
   @ApiOperation({ summary: 'Get a role by ID' })
-  @ApiResponse({ status: 200, description: 'Role found successfully.' })
+  @ApiResponse({ status: 200, description: 'Returns the specified role successfully.' })
+  @ApiResponse({ status: 404, description: 'Role not found. The ID does not exist.' })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const rol = await this.rolesService.findOne(id);
     return RolAdapter.toResponse(rol);
@@ -56,8 +57,9 @@ export class RolesController {
 
   @Patch(':id')
   @Auth(ValidRoles.superadmin, ValidRoles.admin)
-  @ApiOperation({ summary: 'Update a role' })
-  @ApiResponse({ status: 200, description: 'Role updated successfully.' })
+  @ApiOperation({ summary: 'Update a role by ID' })
+  @ApiResponse({ status: 200, description: 'Role updated successfully. Returns the updated role.' })
+  @ApiResponse({ status: 404, description: 'Role not found. The ID does not exist.' })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateRolDto: UpdateRolDto,
@@ -68,8 +70,9 @@ export class RolesController {
 
   @Delete(':id')
   @Auth(ValidRoles.superadmin, ValidRoles.admin)
-  @ApiOperation({ summary: 'Delete a role' })
+  @ApiOperation({ summary: 'Delete a role by ID' })
   @ApiResponse({ status: 200, description: 'Role deleted successfully.' })
+  @ApiResponse({ status: 404, description: 'Role not found. The ID does not exist.' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.rolesService.remove(id);
   }

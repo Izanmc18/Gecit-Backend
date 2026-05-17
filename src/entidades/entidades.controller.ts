@@ -28,8 +28,9 @@ export class EntidadesController {
   @ApiOperation({ summary: 'Create a new entity (Tenant)' })
   @ApiResponse({
     status: 201,
-    description: 'Entity created successfully.',
+    description: 'Entity created successfully. Returns the new entity.',
   })
+  @ApiResponse({ status: 400, description: 'Bad request. The input data is invalid.' })
   async create(@Body() createEntidadDto: CreateEntidadDto) {
     const entidad = await this.entidadesService.create(createEntidadDto);
     return EntidadAdapter.toResponse(entidad);
@@ -40,7 +41,7 @@ export class EntidadesController {
   @ApiOperation({ summary: 'Get a paginated list of entities' })
   @ApiResponse({
     status: 200,
-    description: 'List of entities',
+    description: 'Returns a list of all entities successfully.',
   })
   async findAll(@Query() paginationDto: PaginationDto) {
     const entidades = await this.entidadesService.findAll(paginationDto);
@@ -52,8 +53,9 @@ export class EntidadesController {
   @ApiOperation({ summary: 'Get entity public info by domain (slug)' })
   @ApiResponse({
     status: 200,
-    description: 'Entity found successfully.',
+    description: 'Returns the public info of the specified entity.',
   })
+  @ApiResponse({ status: 404, description: 'Entity not found. The domain does not exist.' })
   async findByDomain(@Param('domain') domain: string) {
     const entidad = await this.entidadesService.findByDomain(domain);
     return EntidadAdapter.toResponse(entidad);
@@ -64,8 +66,9 @@ export class EntidadesController {
   @ApiOperation({ summary: 'Get an entity by ID' })
   @ApiResponse({
     status: 200,
-    description: 'Entity found successfully.',
+    description: 'Returns the specified entity successfully.',
   })
+  @ApiResponse({ status: 404, description: 'Entity not found. The ID does not exist.' })
   async findOne(@Param('id') id: string) {
     const entidad = await this.entidadesService.findOne(id);
     return EntidadAdapter.toResponse(entidad);
@@ -73,11 +76,12 @@ export class EntidadesController {
 
   @Patch(':id')
   @Auth(ValidRoles.superadmin)
-  @ApiOperation({ summary: 'Update an entity' })
+  @ApiOperation({ summary: 'Update an entity by ID' })
   @ApiResponse({
     status: 200,
-    description: 'Entity updated successfully.',
+    description: 'Entity updated successfully. Returns the updated entity.',
   })
+  @ApiResponse({ status: 404, description: 'Entity not found. The ID does not exist.' })
   async update(
     @Param('id') id: string,
     @Body() updateEntidadDto: UpdateEntidadDto,
@@ -88,11 +92,12 @@ export class EntidadesController {
 
   @Delete(':id')
   @Auth(ValidRoles.superadmin)
-  @ApiOperation({ summary: 'Delete an entity' })
+  @ApiOperation({ summary: 'Delete an entity by ID' })
   @ApiResponse({
     status: 200,
     description: 'Entity deleted successfully.',
   })
+  @ApiResponse({ status: 404, description: 'Entity not found. The ID does not exist.' })
   async remove(@Param('id') id: string) {
     await this.entidadesService.remove(id);
     return { message: `Entidad con id ${id} eliminada correctamente` };

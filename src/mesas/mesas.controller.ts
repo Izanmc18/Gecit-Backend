@@ -29,7 +29,8 @@ export class MesasController {
   @Post()
   @Auth(ValidRoles.admin)
   @ApiOperation({ summary: 'Create a new table (Admin only)' })
-  @ApiResponse({ status: 201, description: 'Table created successfully.' })
+  @ApiResponse({ status: 201, description: 'Table created successfully. Returns the new table.' })
+  @ApiResponse({ status: 400, description: 'Bad request. The input data is invalid.' })
   async create(@Body() createMesaDto: CreateMesaDto) {
     const mesa = await this.mesasService.create(createMesaDto);
     return MesaAdapter.toResponse(mesa);
@@ -39,8 +40,8 @@ export class MesasController {
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get all tables' })
   @ApiResponse({
-    status: 201,
-    description: 'Tables found successfully.',
+    status: 200,
+    description: 'Returns a list of all tables successfully.',
   })
   async findAll(@CurrentUser('idEntidad') idEntidad: string) {
     const mesas = await this.mesasService.findAll(idEntidad);
@@ -51,9 +52,10 @@ export class MesasController {
   @Auth(ValidRoles.admin, ValidRoles.empleado)
   @ApiOperation({ summary: 'Get a table by ID' })
   @ApiResponse({
-    status: 201,
-    description: 'Table found successfully.',
+    status: 200,
+    description: 'Returns the specified table successfully.',
   })
+  @ApiResponse({ status: 404, description: 'Table not found. The ID does not exist.' })
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const mesa = await this.mesasService.findOne(id);
     return MesaAdapter.toResponse(mesa);
@@ -61,11 +63,12 @@ export class MesasController {
 
   @Patch(':id')
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Update a table' })
+  @ApiOperation({ summary: 'Update a table by ID' })
   @ApiResponse({
-    status: 201,
-    description: 'Table updated successfully.',
+    status: 200,
+    description: 'Table updated successfully. Returns the updated table.',
   })
+  @ApiResponse({ status: 404, description: 'Table not found. The ID does not exist.' })
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateMesaDto: UpdateMesaDto,
@@ -76,11 +79,12 @@ export class MesasController {
 
   @Delete(':id')
   @Auth(ValidRoles.admin)
-  @ApiOperation({ summary: 'Delete a table' })
+  @ApiOperation({ summary: 'Delete a table by ID' })
   @ApiResponse({
-    status: 201,
+    status: 200,
     description: 'Table deleted successfully.',
   })
+  @ApiResponse({ status: 404, description: 'Table not found. The ID does not exist.' })
   remove(@Param('id', ParseUUIDPipe) id: string) {
     return this.mesasService.remove(id);
   }
