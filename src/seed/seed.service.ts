@@ -123,6 +123,52 @@ export class SeedService {
   }
 
   private async seedUsers(entities: Entidad[], roles: Record<string, Rol>) {
+    const innovasurEnt = entities.find(e => e.dominio === 'innovasur.com') || entities[0];
+
+    // 1. Cuentas específicas personalizadas requeridas
+    const customUsers = [
+      {
+        nombre: 'Super',
+        apellidos: 'Admin',
+        email: 'superadmin@gecit.com',
+        password: 'superadmin123',
+        roleName: 'SuperAdmin',
+        idEntidad: undefined as string | undefined,
+      },
+      {
+        nombre: 'Admin',
+        apellidos: 'Innovasur',
+        email: 'admin@innovasur.com',
+        password: 'admin123',
+        roleName: 'Admin',
+        idEntidad: innovasurEnt.id as string | undefined,
+      },
+      {
+        nombre: 'Trabajador',
+        apellidos: 'Gecit',
+        email: 'trabajador@gecit.com',
+        password: '12345678',
+        roleName: 'Empleado',
+        idEntidad: innovasurEnt.id as string | undefined,
+      }
+    ];
+
+    for (const u of customUsers) {
+      const exists = await this.usuarioRepo.findOne({ where: { email: u.email } });
+      if (!exists) {
+        const role = roles[u.roleName];
+        await this.usuarioRepo.save(this.usuarioRepo.create({
+          nombre: u.nombre,
+          apellidos: u.apellidos,
+          email: u.email,
+          passwordHash: bcrypt.hashSync(u.password, 10),
+          idRol: role.id,
+          idEntidad: u.idEntidad
+        }));
+      }
+    }
+
+    // 2. Usuarios adicionales para poblar la demo
     const passwordHash = bcrypt.hashSync('admin123', 10);
 
     for (let i = 0; i < 15; i++) {
@@ -130,7 +176,7 @@ export class SeedService {
       const exists = await this.usuarioRepo.findOne({ where: { email } });
       if (!exists) {
         const ent = entities[i % entities.length];
-        const role = i < 3 ? roles['Admin'] : (i < 10 ? roles['Empleado'] : roles['Cliente']);
+        const role = i === 0 ? roles['SuperAdmin'] : (i < 3 ? roles['Admin'] : (i < 10 ? roles['Empleado'] : roles['Cliente']));
         
         await this.usuarioRepo.save(this.usuarioRepo.create({
           nombre: `User ${i}`,
@@ -188,8 +234,8 @@ export class SeedService {
   }
 
   private async seedAppointments(entities: Entidad[], tramites: Record<string, Tramite>) {
-    const demoDates = ['2026-05-18', '2026-05-19'];
-    const hours = ['09:00', '10:30', '12:00', '13:30'];
+    const demoDates = ['2026-05-18', '2026-05-19', '2026-05-20'];
+    const hours = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30'];
 
     for (const ent of entities) {
       const defaultTramite = tramites[`${ent.dominio}_Gestión de Trámites Generales`] || Object.values(tramites).find(t => t.idEntidad === ent.id);
@@ -201,32 +247,52 @@ export class SeedService {
 
       const exists = await this.citaRepo.count({ where: { idEntidad: ent.id } });
       if (exists < 5) {
-
-         for (let i = 0; i < 3; i++) {
+         // Historial (Días pasados)
+         for (let i = 0; i < 5; i++) {
             await this.citaRepo.save(this.citaRepo.create({
               idEntidad: ent.id,
-              clienteNombre: 'Histórico',
-              clienteApellidos: `Demo ${i}`,
+              clienteNombre: ['Juan', 'Maria', 'Pedro', 'Ana', 'Luis'][i],
+              clienteApellidos: ['Gomez', 'Sanchez', 'Martinez', 'Ruiz', 'Fernandez'][i],
               clienteEmail: `past${i}@test.com`,
-              clienteDni: `1234567${i}X`,
+              clienteDni: `1234567${i}K`,
+              clienteTelefono: `60000000${i}`,
               fechaHora: new Date(`${pastDateStr} 10:00:00`),
               estado: EstadoCita.REALIZADA,
               idTramite: defaultTramite.id
             }));
          }
 
+         // Próximos días (Presentación)
+         let count = 0;
          for (const date of demoDates) {
             for (const hour of hours) {
+              // Mezclar estados para que los gráficos tengan variedad
+              let estado = EstadoCita.PENDIENTE;
+              if (date === '2026-05-18' && parseInt(hour.split(':')[0]) < 11) {
+                estado = EstadoCita.REALIZADA; // Algunas ya atendidas por la mañana
+              } else if (count % 8 === 0) {
+                estado = EstadoCita.CANCELADA; // Alguna cancelada para dar realismo
+              } else if (count % 12 === 0) {
+                estado = EstadoCita.NO_PRESENTADO; // Alguna no presentada
+              }
+
+              // Generar DNI válido y datos reales
+              const numDni = 23456780 + count;
+              const dniLetter = 'TRWAGMYFPDXBNJZSQVHLCKE'[numDni % 23];
+              const dni = `${numDni}${dniLetter}`;
+
               await this.citaRepo.save(this.citaRepo.create({
                 idEntidad: ent.id,
-                clienteNombre: 'Presentación',
-                clienteApellidos: 'Innovasur',
-                clienteEmail: 'demo@innovasur.com',
-                clienteDni: '99999999Z',
+                clienteNombre: ['Carlos', 'Sofía', 'Alejandro', 'Laura', 'David', 'Marta', 'Javier', 'Elena', 'Diego', 'Carmen'][count % 10],
+                clienteApellidos: ['Pérez', 'López', 'González', 'Rodríguez', 'Marín', 'García', 'Molina', 'Ortiz', 'Torres', 'Navarro'][count % 10],
+                clienteEmail: `cliente${count}@innovasur.com`,
+                clienteDni: dni,
+                clienteTelefono: `61234567${count % 10}`,
                 fechaHora: new Date(`${date} ${hour}:00`),
-                estado: EstadoCita.PENDIENTE,
+                estado: estado,
                 idTramite: defaultTramite.id
               }));
+              count++;
             }
          }
       }
