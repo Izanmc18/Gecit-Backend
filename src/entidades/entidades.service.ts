@@ -83,7 +83,44 @@ export class EntidadesService {
     if (!entidad) {
       throw new NotFoundException(`Entidad con id ${id} no encontrada`);
     }
-    return await this.entidadRepository.save(entidad);
+
+    const savedEntidad = await this.entidadRepository.save(entidad);
+
+    if (tramites && tramites.length > 0) {
+      for (const nombreTramite of tramites) {
+        if (!nombreTramite.trim()) continue;
+
+        // 1. Buscar o crear la Competencia
+        let competencia = await this.competenciaRepository.findOne({
+          where: { nombreCompetencia: nombreTramite.trim(), idEntidad: id }
+        });
+        if (!competencia) {
+          competencia = this.competenciaRepository.create({
+            nombreCompetencia: nombreTramite.trim(),
+            idEntidad: id,
+          });
+          competencia = await this.competenciaRepository.save(competencia);
+        }
+
+        // 2. Buscar o crear el Trámite
+        let tramite = await this.tramiteRepository.findOne({
+          where: { nombreTramite: nombreTramite.trim(), idEntidad: id }
+        });
+        if (!tramite) {
+          tramite = this.tramiteRepository.create({
+            nombreTramite: nombreTramite.trim(),
+            idEntidad: id,
+            idCompetenciaRequerida: competencia.id,
+          });
+          await this.tramiteRepository.save(tramite);
+        } else if (!tramite.idCompetenciaRequerida) {
+          tramite.idCompetenciaRequerida = competencia.id;
+          await this.tramiteRepository.save(tramite);
+        }
+      }
+    }
+
+    return savedEntidad;
   }
 
   async remove(id: string): Promise<void> {

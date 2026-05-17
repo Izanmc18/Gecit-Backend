@@ -10,6 +10,7 @@ import { Sala } from '../salas/entities/sala.entity';
 import { Mesa } from '../mesas/entities/mesa.entity';
 import { Cita, EstadoCita } from '../citas/entities/cita.entity';
 import { Tramite } from '../tramites/entities/tramite.entity';
+import { Competencia } from '../competencias/entities/competencia.entity';
 
 @Injectable()
 export class SeedService {
@@ -124,6 +125,7 @@ export class SeedService {
 
   private async seedUsers(entities: Entidad[], roles: Record<string, Rol>) {
     const innovasurEnt = entities.find(e => e.dominio === 'innovasur.com') || entities[0];
+    const competenciaRepo = this.dataSource.getRepository(Competencia);
 
     // 1. Cuentas específicas personalizadas requeridas
     const customUsers = [
@@ -157,14 +159,21 @@ export class SeedService {
       const exists = await this.usuarioRepo.findOne({ where: { email: u.email } });
       if (!exists) {
         const role = roles[u.roleName];
-        await this.usuarioRepo.save(this.usuarioRepo.create({
+        const userToSave = this.usuarioRepo.create({
           nombre: u.nombre,
           apellidos: u.apellidos,
           email: u.email,
           passwordHash: bcrypt.hashSync(u.password, 10),
           idRol: role.id,
           idEntidad: u.idEntidad
-        }));
+        });
+
+        if (u.roleName === 'Empleado' && u.idEntidad) {
+          const comps = await competenciaRepo.find({ where: { idEntidad: u.idEntidad } });
+          userToSave.competencias = comps;
+        }
+
+        await this.usuarioRepo.save(userToSave);
       }
     }
 
@@ -178,14 +187,21 @@ export class SeedService {
         const ent = entities[i % entities.length];
         const role = i === 0 ? roles['SuperAdmin'] : (i < 3 ? roles['Admin'] : (i < 10 ? roles['Empleado'] : roles['Cliente']));
         
-        await this.usuarioRepo.save(this.usuarioRepo.create({
+        const userToSave = this.usuarioRepo.create({
           nombre: `User ${i}`,
           apellidos: `Test ${i}`,
           email,
           passwordHash,
           idRol: role.id,
           idEntidad: ent.id
-        }));
+        });
+
+        if (role.nombreRol === 'Empleado' && ent.id) {
+          const comps = await competenciaRepo.find({ where: { idEntidad: ent.id } });
+          userToSave.competencias = comps;
+        }
+
+        await this.usuarioRepo.save(userToSave);
       }
     }
   }
@@ -216,16 +232,33 @@ export class SeedService {
   private async seedTramites(entities: Entidad[]) {
     const tramites: Record<string, Tramite> = {};
     const nombresTramite = ['Gestión de Trámites Generales', 'Licencias', 'Padrón y Censo'];
+    const competenciaRepo = this.dataSource.getRepository(Competencia);
 
     for (const ent of entities) {
       for (const nombre of nombresTramite) {
+        // 1. Asegurar Competencia
+        let competencia = await competenciaRepo.findOne({
+          where: { nombreCompetencia: nombre, idEntidad: ent.id }
+        });
+        if (!competencia) {
+          competencia = await competenciaRepo.save(competenciaRepo.create({
+            nombreCompetencia: nombre,
+            idEntidad: ent.id,
+          }));
+        }
+
+        // 2. Asegurar Trámite
         let tramite = await this.tramiteRepo.findOne({ where: { nombreTramite: nombre, idEntidad: ent.id } });
         if (!tramite) {
           tramite = await this.tramiteRepo.save(this.tramiteRepo.create({
             nombreTramite: nombre,
             descripcion: `Descripción para ${nombre}`,
             idEntidad: ent.id,
+            idCompetenciaRequerida: competencia.id,
           }));
+        } else if (!tramite.idCompetenciaRequerida) {
+          tramite.idCompetenciaRequerida = competencia.id;
+          tramite = await this.tramiteRepo.save(tramite);
         }
         tramites[`${ent.dominio}_${nombre}`] = tramite;
       }
