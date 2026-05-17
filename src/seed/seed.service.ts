@@ -11,6 +11,7 @@ import { Mesa } from '../mesas/entities/mesa.entity';
 import { Cita, EstadoCita } from '../citas/entities/cita.entity';
 import { Tramite } from '../tramites/entities/tramite.entity';
 import { Competencia } from '../competencias/entities/competencia.entity';
+import { Horario } from '../horarios/entities/horario.entity';
 
 @Injectable()
 export class SeedService {
@@ -58,6 +59,8 @@ export class SeedService {
     const roles = await this.seedRoles();
 
     const entities = await this.seedEntities();
+
+    await this.seedHorarios(entities);
 
     const tramites = await this.seedTramites(entities);
 
@@ -121,6 +124,22 @@ export class SeedService {
       entities.push(ent);
     }
     return entities;
+  }
+
+  private async seedHorarios(entities: Entidad[]) {
+    const horarioRepo = this.dataSource.getRepository(Horario);
+    for (const ent of entities) {
+      const exists = await horarioRepo.count({ where: { idEntidad: ent.id } });
+      if (exists === 0) {
+        await horarioRepo.save(horarioRepo.create({
+          idEntidad: ent.id,
+          fechaInicio: '2026-01-01',
+          fechaFin: '2026-12-31',
+          horaApertura: '08:00:00',
+          horaCierre: '15:00:00'
+        }));
+      }
+    }
   }
 
   private async seedUsers(entities: Entidad[], roles: Record<string, Rol>) {
