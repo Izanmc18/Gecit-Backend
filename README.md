@@ -72,6 +72,13 @@ Comunicación ORM nativa y robusta contra el motor MySQL.
 
 ¡Listo! Tu backend estará en activo e interactuando en caliente desde: `http://localhost:3000/api/v1`
 
+4. **Datos de Prueba (Seed)**:
+   Si necesitas rellenar la base de datos con información de prueba para probar la plataforma (Entidades, Roles, Empleados, Salas, Mesas y Trámites), simplemente realiza una petición `GET` al endpoint de Seed una vez levantado el servidor:
+   ```bash
+   curl http://localhost:3000/api/v1/seed
+   ```
+   *Nota: Este proceso borrará los datos existentes y generará un entorno limpio y configurado para demostraciones.*
+
 ---
 
 ## 🏗️ Despliegue en Clúster (Docker Compose)
