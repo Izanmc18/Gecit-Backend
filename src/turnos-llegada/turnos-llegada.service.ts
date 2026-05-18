@@ -168,9 +168,9 @@ export class TurnosLlegadaService {
     const cita = await this.citaRepository
       .createQueryBuilder('cita')
       .leftJoinAndSelect('cita.turnoLlegada', 'turnoLlegada')
-      .innerJoin('cita.mesa', 'mesa')
-      .innerJoin('mesa.sala', 'sala')
-      .where('sala.idEntidad = :idEntidad', { idEntidad: checkinDto.idEntidad })
+      .leftJoinAndSelect('cita.mesa', 'mesa')
+      .leftJoinAndSelect('cita.sala', 'sala')
+      .where('cita.idEntidad = :idEntidad', { idEntidad: checkinDto.idEntidad })
       .andWhere('cita.clienteDni = :dni', { dni: checkinDto.dni })
       .andWhere('DATE(cita.fechaHora) = :hoy', { hoy })
       .andWhere('cita.estado = :estado', { estado: 'Pendiente' })
