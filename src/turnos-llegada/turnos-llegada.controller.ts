@@ -13,7 +13,7 @@ import {
   Sse,
   MessageEvent,
 } from '@nestjs/common';
-import { Observable, filter } from 'rxjs';
+import { Observable, filter, merge, interval, map } from 'rxjs';
 import {
   ApiTags,
   ApiOperation,
@@ -54,12 +54,18 @@ export class TurnosLlegadaController {
   @Public()
   @ApiOperation({ summary: 'Real-time event stream for an entity using SSE' })
   events(@Param('idEntidadOrSlug') idEntidadOrSlug: string): Observable<MessageEvent> {
-    return this.turnosLlegadaService.getEventsObservable().pipe(
+    const eventStream$ = this.turnosLlegadaService.getEventsObservable().pipe(
       filter((event: any) => 
         event.data.idEntidad === idEntidadOrSlug || 
         event.data.slugEntidad === idEntidadOrSlug
       ),
     );
+
+    const heartbeat$ = interval(15000).pipe(
+      map(() => ({ data: { type: 'heartbeat' } } as MessageEvent)),
+    );
+
+    return merge(eventStream$, heartbeat$);
   }
 
   @Post()
