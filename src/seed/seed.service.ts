@@ -64,11 +64,11 @@ export class SeedService {
 
     const tramites = await this.seedTramites(entities);
 
-    await this.seedUsers(entities, roles);
+    const users = await this.seedUsers(entities, roles);
 
     await this.seedResources(entities);
 
-    await this.seedAppointments(entities, tramites);
+    await this.seedAppointments(entities, tramites, users);
 
     return { message: 'Seed executed successfully' };
   }
@@ -142,7 +142,7 @@ export class SeedService {
     }
   }
 
-  private async seedUsers(entities: Entidad[], roles: Record<string, Rol>) {
+  private async seedUsers(entities: Entidad[], roles: Record<string, Rol>): Promise<Record<string, Usuario>> {
     const innovasurEnt = entities.find(e => e.dominio === 'innovasur.com') || entities[0];
     const competenciaRepo = this.dataSource.getRepository(Competencia);
 
@@ -174,6 +174,8 @@ export class SeedService {
       }
     ];
 
+    const savedUsers: Record<string, Usuario> = {};
+
     for (const u of customUsers) {
       const exists = await this.usuarioRepo.findOne({ where: { email: u.email } });
       if (!exists) {
@@ -192,7 +194,10 @@ export class SeedService {
           userToSave.competencias = comps;
         }
 
-        await this.usuarioRepo.save(userToSave);
+        const saved = await this.usuarioRepo.save(userToSave);
+        savedUsers[u.email] = saved;
+      } else {
+        savedUsers[u.email] = exists;
       }
     }
 
@@ -223,6 +228,8 @@ export class SeedService {
         await this.usuarioRepo.save(userToSave);
       }
     }
+
+    return savedUsers;
   }
 
   private async seedResources(entities: Entidad[]) {
@@ -285,68 +292,96 @@ export class SeedService {
     return tramites;
   }
 
-  private async seedAppointments(entities: Entidad[], tramites: Record<string, Tramite>) {
-    const demoDates = ['2026-05-18', '2026-05-19', '2026-05-20'];
+  /** Genera una fecha en formato YYYY-MM-DD sumando `offsetDays` al día de hoy */
+  private getDateStr(offsetDays: number): string {
+    const d = new Date();
+    d.setDate(d.getDate() + offsetDays);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  private async seedAppointments(
+    entities: Entidad[],
+    tramites: Record<string, Tramite>,
+    savedUsers: Record<string, Usuario>,
+  ) {
+    // Fechas dinámicas: siempre relativas al día de ejecución del seed
+    const demoDates = [
+      this.getDateStr(-1), // ayer
+      this.getDateStr(0),  // hoy  ← CRÍTICO para la presentación
+      this.getDateStr(1),  // mañana
+    ];
     const hours = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30'];
+
+    // Trabajador de demo de Innovasur al que asignamos las citas de hoy
+    const demoWorker = savedUsers['trabajador@gecit.com'];
+    const todayStr = this.getDateStr(0);
 
     for (const ent of entities) {
       const defaultTramite = tramites[`${ent.dominio}_Gestión de Trámites Generales`] || Object.values(tramites).find(t => t.idEntidad === ent.id);
       if (!defaultTramite) continue;
 
-      const pastDate = new Date();
-      pastDate.setDate(pastDate.getDate() - 2);
-      const pastDateStr = pastDate.toISOString().split('T')[0];
+      const pastDateStr = this.getDateStr(-3);
 
       const exists = await this.citaRepo.count({ where: { idEntidad: ent.id } });
       if (exists < 5) {
-         // Historial (Días pasados)
-         for (let i = 0; i < 5; i++) {
-            await this.citaRepo.save(this.citaRepo.create({
-              idEntidad: ent.id,
-              clienteNombre: ['Juan', 'Maria', 'Pedro', 'Ana', 'Luis'][i],
-              clienteApellidos: ['Gomez', 'Sanchez', 'Martinez', 'Ruiz', 'Fernandez'][i],
-              clienteEmail: `past${i}@test.com`,
-              clienteDni: `1234567${i}K`,
-              clienteTelefono: `60000000${i}`,
-              fechaHora: new Date(`${pastDateStr} 10:00:00`),
-              estado: EstadoCita.REALIZADA,
-              idTramite: defaultTramite.id
-            }));
-         }
+        // Historial (días pasados para analíticas)
+        for (let i = 0; i < 5; i++) {
+          await this.citaRepo.save(this.citaRepo.create({
+            idEntidad: ent.id,
+            clienteNombre: ['Juan', 'Maria', 'Pedro', 'Ana', 'Luis'][i],
+            clienteApellidos: ['Gomez', 'Sanchez', 'Martinez', 'Ruiz', 'Fernandez'][i],
+            clienteEmail: `past${i}@test.com`,
+            clienteDni: `1234567${i}K`,
+            clienteTelefono: `60000000${i}`,
+            fechaHora: new Date(`${pastDateStr} 10:00:00`),
+            estado: EstadoCita.REALIZADA,
+            idTramite: defaultTramite.id
+          }));
+        }
 
-         // Próximos días (Presentación)
-         let count = 0;
-         for (const date of demoDates) {
-            for (const hour of hours) {
-              // Mezclar estados para que los gráficos tengan variedad
-              let estado = EstadoCita.PENDIENTE;
-              if (date === '2026-05-18' && parseInt(hour.split(':')[0]) < 11) {
-                estado = EstadoCita.REALIZADA; // Algunas ya atendidas por la mañana
-              } else if (count % 8 === 0) {
-                estado = EstadoCita.CANCELADA; // Alguna cancelada para dar realismo
-              } else if (count % 12 === 0) {
-                estado = EstadoCita.NO_PRESENTADO; // Alguna no presentada
-              }
-
-              // Generar DNI válido y datos reales
-              const numDni = 23456780 + count;
-              const dniLetter = 'TRWAGMYFPDXBNJZSQVHLCKE'[numDni % 23];
-              const dni = `${numDni}${dniLetter}`;
-
-              await this.citaRepo.save(this.citaRepo.create({
-                idEntidad: ent.id,
-                clienteNombre: ['Carlos', 'Sofía', 'Alejandro', 'Laura', 'David', 'Marta', 'Javier', 'Elena', 'Diego', 'Carmen'][count % 10],
-                clienteApellidos: ['Pérez', 'López', 'González', 'Rodríguez', 'Marín', 'García', 'Molina', 'Ortiz', 'Torres', 'Navarro'][count % 10],
-                clienteEmail: `cliente${count}@innovasur.com`,
-                clienteDni: dni,
-                clienteTelefono: `61234567${count % 10}`,
-                fechaHora: new Date(`${date} ${hour}:00`),
-                estado: estado,
-                idTramite: defaultTramite.id
-              }));
-              count++;
+        // Citas de presentación relativas a HOY
+        let count = 0;
+        for (const date of demoDates) {
+          for (const hour of hours) {
+            let estado = EstadoCita.PENDIENTE;
+            // Las de ayer: algunas ya realizadas (realismo en gráficas)
+            if (date === demoDates[0] && parseInt(hour.split(':')[0]) < 11) {
+              estado = EstadoCita.REALIZADA;
+            } else if (count % 8 === 0) {
+              estado = EstadoCita.CANCELADA;
+            } else if (count % 12 === 0) {
+              estado = EstadoCita.NO_PRESENTADO;
             }
-         }
+
+            const numDni = 23456780 + count;
+            const dniLetter = 'TRWAGMYFPDXBNJZSQVHLCKE'[numDni % 23];
+            const dni = `${numDni}${dniLetter}`;
+
+            const citaData: any = {
+              idEntidad: ent.id,
+              clienteNombre: ['Carlos', 'Sofía', 'Alejandro', 'Laura', 'David', 'Marta', 'Javier', 'Elena', 'Diego', 'Carmen'][count % 10],
+              clienteApellidos: ['Pérez', 'López', 'González', 'Rodríguez', 'Marín', 'García', 'Molina', 'Ortiz', 'Torres', 'Navarro'][count % 10],
+              clienteEmail: `cliente${count}@innovasur.com`,
+              clienteDni: dni,
+              clienteTelefono: `61234567${count % 10}`,
+              fechaHora: new Date(`${date} ${hour}:00`),
+              estado: estado,
+              idTramite: defaultTramite.id,
+            };
+
+            // Las citas de HOY de Innovasur se asignan al trabajador de demo
+            // Así aparecen en "Mi Agenda Hoy" sin depender del filtro por competencias
+            if (ent.dominio === 'innovasur.com' && demoWorker && date === todayStr) {
+              citaData.idUsuarioAsignado = demoWorker.id;
+            }
+
+            await this.citaRepo.save(this.citaRepo.create(citaData));
+            count++;
+          }
+        }
       }
     }
   }

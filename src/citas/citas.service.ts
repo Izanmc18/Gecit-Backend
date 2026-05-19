@@ -121,7 +121,7 @@ export class CitasService {
 
   async findAll(filterDto: FilterCitaDto, forcedIdEntidad?: string) {
     const {
-      limit = 10,
+      limit = 1000,
       offset = 0,
       search,
       idUsuarioAsignado,

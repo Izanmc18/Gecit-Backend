@@ -15,7 +15,7 @@ export class CitaResponse {
   sala?: any;
   idTramite: string;
   tramite?: any;
-  fechaHora: Date;
+  fechaHora: string;
   estado: EstadoCita;
   observaciones: string | null;
   turnoLlegada?: any;
@@ -44,7 +44,13 @@ export class CitaAdapter {
       tramite: cita.tramite
         ? { nombreTramite: cita.tramite.nombreTramite }
         : undefined,
-      fechaHora: cita.fechaHora,
+      fechaHora: cita.fechaHora
+        ? (() => {
+            const d = new Date(cita.fechaHora);
+            const pad = (n: number) => String(n).padStart(2, '0');
+            return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+          })()
+        : cita.fechaHora,
       estado: cita.estado,
       observaciones: cita.observaciones || null,
       turnoLlegada: cita.turnoLlegada
