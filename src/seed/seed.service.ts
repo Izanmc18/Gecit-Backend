@@ -1,4 +1,3 @@
-
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, DataSource } from 'typeorm';
@@ -17,13 +16,16 @@ import { Horario } from '../horarios/entities/horario.entity';
 export class SeedService {
   constructor(
     private readonly dataSource: DataSource,
-    @InjectRepository(Entidad) private readonly entidadRepo: Repository<Entidad>,
-    @InjectRepository(Usuario) private readonly usuarioRepo: Repository<Usuario>,
+    @InjectRepository(Entidad)
+    private readonly entidadRepo: Repository<Entidad>,
+    @InjectRepository(Usuario)
+    private readonly usuarioRepo: Repository<Usuario>,
     @InjectRepository(Rol) private readonly rolRepo: Repository<Rol>,
     @InjectRepository(Sala) private readonly salaRepo: Repository<Sala>,
     @InjectRepository(Mesa) private readonly mesaRepo: Repository<Mesa>,
     @InjectRepository(Cita) private readonly citaRepo: Repository<Cita>,
-    @InjectRepository(Tramite) private readonly tramiteRepo: Repository<Tramite>,
+    @InjectRepository(Tramite)
+    private readonly tramiteRepo: Repository<Tramite>,
   ) {}
 
   async runSeed() {
@@ -86,11 +88,15 @@ export class SeedService {
       let role = await this.rolRepo.findOne({ where: { id: item.id } });
       if (!role) {
         // En caso de que exista por nombre pero con otro ID
-        const existingByName = await this.rolRepo.findOne({ where: { nombreRol: item.name } });
+        const existingByName = await this.rolRepo.findOne({
+          where: { nombreRol: item.name },
+        });
         if (existingByName) {
           await this.rolRepo.delete(existingByName.id);
         }
-        role = await this.rolRepo.save(this.rolRepo.create({ id: item.id, nombreRol: item.name }));
+        role = await this.rolRepo.save(
+          this.rolRepo.create({ id: item.id, nombreRol: item.name }),
+        );
       }
       roles[item.name] = role;
     }
@@ -100,15 +106,25 @@ export class SeedService {
   private async seedEntities() {
     const data = [
       { nombre: 'Ayuntamiento de Jaén', dominio: 'jaen.es', delayMonths: 5 },
-      { nombre: 'Ayuntamiento de Linares', dominio: 'linares.es', delayMonths: 4 },
+      {
+        nombre: 'Ayuntamiento de Linares',
+        dominio: 'linares.es',
+        delayMonths: 4,
+      },
       { nombre: 'Ayuntamiento de Úbeda', dominio: 'ubeda.es', delayMonths: 3 },
-      { nombre: 'Ayuntamiento de Martos', dominio: 'martos.es', delayMonths: 2 },
+      {
+        nombre: 'Ayuntamiento de Martos',
+        dominio: 'martos.es',
+        delayMonths: 2,
+      },
       { nombre: 'Innovasur S.L.', dominio: 'innovasur.com', delayMonths: 1 },
     ];
 
     const entities: Entidad[] = [];
     for (const item of data) {
-      let ent = await this.entidadRepo.findOne({ where: { dominio: item.dominio } });
+      let ent = await this.entidadRepo.findOne({
+        where: { dominio: item.dominio },
+      });
       if (!ent) {
         const date = new Date();
         date.setMonth(date.getMonth() - item.delayMonths);
@@ -119,7 +135,10 @@ export class SeedService {
         });
         ent = await this.entidadRepo.save(ent);
 
-        await this.dataSource.query('UPDATE entidades SET fecha_creacion = ? WHERE id = ?', [date, ent.id]);
+        await this.dataSource.query(
+          'UPDATE entidades SET fecha_creacion = ? WHERE id = ?',
+          [date, ent.id],
+        );
       }
       entities.push(ent);
     }
@@ -131,19 +150,25 @@ export class SeedService {
     for (const ent of entities) {
       const exists = await horarioRepo.count({ where: { idEntidad: ent.id } });
       if (exists === 0) {
-        await horarioRepo.save(horarioRepo.create({
-          idEntidad: ent.id,
-          fechaInicio: '2026-01-01',
-          fechaFin: '2026-12-31',
-          horaApertura: '08:00:00',
-          horaCierre: '15:00:00'
-        }));
+        await horarioRepo.save(
+          horarioRepo.create({
+            idEntidad: ent.id,
+            fechaInicio: '2026-01-01',
+            fechaFin: '2026-12-31',
+            horaApertura: '08:00:00',
+            horaCierre: '15:00:00',
+          }),
+        );
       }
     }
   }
 
-  private async seedUsers(entities: Entidad[], roles: Record<string, Rol>): Promise<Record<string, Usuario>> {
-    const innovasurEnt = entities.find(e => e.dominio === 'innovasur.com') || entities[0];
+  private async seedUsers(
+    entities: Entidad[],
+    roles: Record<string, Rol>,
+  ): Promise<Record<string, Usuario>> {
+    const innovasurEnt =
+      entities.find((e) => e.dominio === 'innovasur.com') || entities[0];
     const competenciaRepo = this.dataSource.getRepository(Competencia);
 
     // 1. Cuentas específicas personalizadas requeridas
@@ -171,13 +196,15 @@ export class SeedService {
         password: '12345678',
         roleName: 'Empleado',
         idEntidad: innovasurEnt.id as string | undefined,
-      }
+      },
     ];
 
     const savedUsers: Record<string, Usuario> = {};
 
     for (const u of customUsers) {
-      const exists = await this.usuarioRepo.findOne({ where: { email: u.email } });
+      const exists = await this.usuarioRepo.findOne({
+        where: { email: u.email },
+      });
       if (!exists) {
         const role = roles[u.roleName];
         const userToSave = this.usuarioRepo.create({
@@ -186,11 +213,13 @@ export class SeedService {
           email: u.email,
           passwordHash: bcrypt.hashSync(u.password, 10),
           idRol: role.id,
-          idEntidad: u.idEntidad
+          idEntidad: u.idEntidad,
         });
 
         if (u.roleName === 'Empleado' && u.idEntidad) {
-          const comps = await competenciaRepo.find({ where: { idEntidad: u.idEntidad } });
+          const comps = await competenciaRepo.find({
+            where: { idEntidad: u.idEntidad },
+          });
           userToSave.competencias = comps;
         }
 
@@ -209,19 +238,28 @@ export class SeedService {
       const exists = await this.usuarioRepo.findOne({ where: { email } });
       if (!exists) {
         const ent = entities[i % entities.length];
-        const role = i === 0 ? roles['SuperAdmin'] : (i < 3 ? roles['Admin'] : (i < 10 ? roles['Empleado'] : roles['Cliente']));
-        
+        const role =
+          i === 0
+            ? roles['SuperAdmin']
+            : i < 3
+              ? roles['Admin']
+              : i < 10
+                ? roles['Empleado']
+                : roles['Cliente'];
+
         const userToSave = this.usuarioRepo.create({
           nombre: `User ${i}`,
           apellidos: `Test ${i}`,
           email,
           passwordHash,
           idRol: role.id,
-          idEntidad: ent.id
+          idEntidad: ent.id,
         });
 
         if (role.nombreRol === 'Empleado' && ent.id) {
-          const comps = await competenciaRepo.find({ where: { idEntidad: ent.id } });
+          const comps = await competenciaRepo.find({
+            where: { idEntidad: ent.id },
+          });
           userToSave.competencias = comps;
         }
 
@@ -234,22 +272,28 @@ export class SeedService {
 
   private async seedResources(entities: Entidad[]) {
     for (const ent of entities) {
-      const roomsCount = await this.salaRepo.count({ where: { idEntidad: ent.id } });
+      const roomsCount = await this.salaRepo.count({
+        where: { idEntidad: ent.id },
+      });
       if (roomsCount === 0) {
-        const sala = await this.salaRepo.save(this.salaRepo.create({
-          nombreSala: 'Planta Principal',
-          idEntidad: ent.id
-        }));
+        const sala = await this.salaRepo.save(
+          this.salaRepo.create({
+            nombreSala: 'Planta Principal',
+            idEntidad: ent.id,
+          }),
+        );
 
         for (let j = 0; j < 5; j++) {
-          await this.mesaRepo.save(this.mesaRepo.create({
-            nombreMesa: `Mesa ${j + 1}`,
-            idSala: sala.id,
-            posX: 100 + (j * 150),
-            posY: 200,
-            ancho: 80,
-            largo: 60
-          }));
+          await this.mesaRepo.save(
+            this.mesaRepo.create({
+              nombreMesa: `Mesa ${j + 1}`,
+              idSala: sala.id,
+              posX: 100 + j * 150,
+              posY: 200,
+              ancho: 80,
+              largo: 60,
+            }),
+          );
         }
       }
     }
@@ -257,31 +301,41 @@ export class SeedService {
 
   private async seedTramites(entities: Entidad[]) {
     const tramites: Record<string, Tramite> = {};
-    const nombresTramite = ['Gestión de Trámites Generales', 'Licencias', 'Padrón y Censo'];
+    const nombresTramite = [
+      'Gestión de Trámites Generales',
+      'Licencias',
+      'Padrón y Censo',
+    ];
     const competenciaRepo = this.dataSource.getRepository(Competencia);
 
     for (const ent of entities) {
       for (const nombre of nombresTramite) {
         // 1. Asegurar Competencia
         let competencia = await competenciaRepo.findOne({
-          where: { nombreCompetencia: nombre, idEntidad: ent.id }
+          where: { nombreCompetencia: nombre, idEntidad: ent.id },
         });
         if (!competencia) {
-          competencia = await competenciaRepo.save(competenciaRepo.create({
-            nombreCompetencia: nombre,
-            idEntidad: ent.id,
-          }));
+          competencia = await competenciaRepo.save(
+            competenciaRepo.create({
+              nombreCompetencia: nombre,
+              idEntidad: ent.id,
+            }),
+          );
         }
 
         // 2. Asegurar Trámite
-        let tramite = await this.tramiteRepo.findOne({ where: { nombreTramite: nombre, idEntidad: ent.id } });
+        let tramite = await this.tramiteRepo.findOne({
+          where: { nombreTramite: nombre, idEntidad: ent.id },
+        });
         if (!tramite) {
-          tramite = await this.tramiteRepo.save(this.tramiteRepo.create({
-            nombreTramite: nombre,
-            descripcion: `Descripción para ${nombre}`,
-            idEntidad: ent.id,
-            idCompetenciaRequerida: competencia.id,
-          }));
+          tramite = await this.tramiteRepo.save(
+            this.tramiteRepo.create({
+              nombreTramite: nombre,
+              descripcion: `Descripción para ${nombre}`,
+              idEntidad: ent.id,
+              idCompetenciaRequerida: competencia.id,
+            }),
+          );
         } else if (!tramite.idCompetenciaRequerida) {
           tramite.idCompetenciaRequerida = competencia.id;
           tramite = await this.tramiteRepo.save(tramite);
@@ -310,36 +364,59 @@ export class SeedService {
     // Fechas dinámicas: siempre relativas al día de ejecución del seed
     const demoDates = [
       this.getDateStr(-1), // ayer
-      this.getDateStr(0),  // hoy  ← CRÍTICO para la presentación
-      this.getDateStr(1),  // mañana
+      this.getDateStr(0), // hoy  ← CRÍTICO para la presentación
+      this.getDateStr(1), // mañana
     ];
-    const hours = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30'];
+    const hours = [
+      '09:00',
+      '09:30',
+      '10:00',
+      '10:30',
+      '11:00',
+      '11:30',
+      '12:00',
+      '12:30',
+      '13:00',
+      '13:30',
+    ];
 
     // Trabajador de demo de Innovasur al que asignamos las citas de hoy
     const demoWorker = savedUsers['trabajador@gecit.com'];
     const todayStr = this.getDateStr(0);
 
     for (const ent of entities) {
-      const defaultTramite = tramites[`${ent.dominio}_Gestión de Trámites Generales`] || Object.values(tramites).find(t => t.idEntidad === ent.id);
+      const defaultTramite =
+        tramites[`${ent.dominio}_Gestión de Trámites Generales`] ||
+        Object.values(tramites).find((t) => t.idEntidad === ent.id);
       if (!defaultTramite) continue;
 
       const pastDateStr = this.getDateStr(-3);
 
-      const exists = await this.citaRepo.count({ where: { idEntidad: ent.id } });
+      const exists = await this.citaRepo.count({
+        where: { idEntidad: ent.id },
+      });
       if (exists < 5) {
         // Historial (días pasados para analíticas)
         for (let i = 0; i < 5; i++) {
-          await this.citaRepo.save(this.citaRepo.create({
-            idEntidad: ent.id,
-            clienteNombre: ['Juan', 'Maria', 'Pedro', 'Ana', 'Luis'][i],
-            clienteApellidos: ['Gomez', 'Sanchez', 'Martinez', 'Ruiz', 'Fernandez'][i],
-            clienteEmail: `past${i}@test.com`,
-            clienteDni: `1234567${i}K`,
-            clienteTelefono: `60000000${i}`,
-            fechaHora: new Date(`${pastDateStr} 10:00:00`),
-            estado: EstadoCita.REALIZADA,
-            idTramite: defaultTramite.id
-          }));
+          await this.citaRepo.save(
+            this.citaRepo.create({
+              idEntidad: ent.id,
+              clienteNombre: ['Juan', 'Maria', 'Pedro', 'Ana', 'Luis'][i],
+              clienteApellidos: [
+                'Gomez',
+                'Sanchez',
+                'Martinez',
+                'Ruiz',
+                'Fernandez',
+              ][i],
+              clienteEmail: `past${i}@test.com`,
+              clienteDni: `1234567${i}K`,
+              clienteTelefono: `60000000${i}`,
+              fechaHora: new Date(`${pastDateStr} 10:00:00`),
+              estado: EstadoCita.REALIZADA,
+              idTramite: defaultTramite.id,
+            }),
+          );
         }
 
         // Citas de presentación relativas a HOY
@@ -362,8 +439,30 @@ export class SeedService {
 
             const citaData: any = {
               idEntidad: ent.id,
-              clienteNombre: ['Carlos', 'Sofía', 'Alejandro', 'Laura', 'David', 'Marta', 'Javier', 'Elena', 'Diego', 'Carmen'][count % 10],
-              clienteApellidos: ['Pérez', 'López', 'González', 'Rodríguez', 'Marín', 'García', 'Molina', 'Ortiz', 'Torres', 'Navarro'][count % 10],
+              clienteNombre: [
+                'Carlos',
+                'Sofía',
+                'Alejandro',
+                'Laura',
+                'David',
+                'Marta',
+                'Javier',
+                'Elena',
+                'Diego',
+                'Carmen',
+              ][count % 10],
+              clienteApellidos: [
+                'Pérez',
+                'López',
+                'González',
+                'Rodríguez',
+                'Marín',
+                'García',
+                'Molina',
+                'Ortiz',
+                'Torres',
+                'Navarro',
+              ][count % 10],
               clienteEmail: `cliente${count}@innovasur.com`,
               clienteDni: dni,
               clienteTelefono: `61234567${count % 10}`,
@@ -374,7 +473,11 @@ export class SeedService {
 
             // Las citas de HOY de Innovasur se asignan al trabajador de demo
             // Así aparecen en "Mi Agenda Hoy" sin depender del filtro por competencias
-            if (ent.dominio === 'innovasur.com' && demoWorker && date === todayStr) {
+            if (
+              ent.dominio === 'innovasur.com' &&
+              demoWorker &&
+              date === todayStr
+            ) {
               citaData.idUsuarioAsignado = demoWorker.id;
             }
 

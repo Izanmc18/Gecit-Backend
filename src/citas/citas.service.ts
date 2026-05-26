@@ -121,7 +121,7 @@ export class CitasService {
 
   async findAll(filterDto: FilterCitaDto, forcedIdEntidad?: string) {
     const {
-      limit = 1000,
+      limit = 1000, //aqui
       offset = 0,
       search,
       idUsuarioAsignado,
@@ -256,7 +256,8 @@ export class CitasService {
     });
     if (!tramite)
       throw new NotFoundException(`Trámite ${idTramite} no encontrado`);
-    const idCompReq = tramite.idCompetenciaRequerida;
+    const idCompReq = tramite.idCompetenciaRequerida;
+
     const normDate = (d: string | Date): string => {
       if (d instanceof Date) return d.toISOString().split('T')[0];
       const s = String(d);
@@ -289,7 +290,9 @@ export class CitasService {
       
       if (idsUsuariosAsignados.length > 0) {
         usuariosBase = todosLosUsuarios.filter(u => idsUsuariosAsignados.includes(u.id));
-      } else {
+      } else {
+
+
         usuariosBase = todosLosUsuarios;
       }
     }

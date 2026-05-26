@@ -15,7 +15,7 @@ export class CitaResponse {
   sala?: any;
   idTramite: string;
   tramite?: any;
-  fechaHora: string;
+  fechaHora: string; //AQUI
   estado: EstadoCita;
   observaciones: string | null;
   turnoLlegada?: any;
@@ -37,14 +37,19 @@ export class CitaAdapter {
       idMesa: cita.idMesa,
       mesa: cita.mesa ? { nombreMesa: cita.mesa.nombreMesa } : undefined,
       idSala: cita.idSala,
-      sala: (cita.sala || (cita.mesa && cita.mesa.sala))
-        ? { nombreSala: (cita.sala ? cita.sala.nombreSala : cita.mesa.sala.nombreSala) }
-        : undefined,
+      sala:
+        cita.sala || (cita.mesa && cita.mesa.sala)
+          ? {
+              nombreSala: cita.sala
+                ? cita.sala.nombreSala
+                : cita.mesa.sala.nombreSala,
+            }
+          : undefined,
       idTramite: cita.idTramite,
       tramite: cita.tramite
         ? { nombreTramite: cita.tramite.nombreTramite }
         : undefined,
-      fechaHora: cita.fechaHora
+      fechaHora: cita.fechaHora //AQUI
         ? (() => {
             const d = new Date(cita.fechaHora);
             const pad = (n: number) => String(n).padStart(2, '0');
